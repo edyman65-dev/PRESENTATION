@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduGalp — Formação para o Futuro</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --galp-orange: #FF6B00;
+    --galp-dark: #1A1A1A;
+    --galp-gray: #6B6B6B;
+    --galp-light: #F8F8F8;
+    --galp-white: #FFFFFF;
+    --slide-w: 100vw;
+    --slide-h: 100vh;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #111;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── DECK WRAPPER ── */
+  .deck { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+
+  /* ── SLIDES ── */
+  .slide {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    transform: translateX(60px);
+    background: var(--galp-white);
+  }
+  .slide.active {
+    opacity: 1; pointer-events: all; transform: translateX(0);
+  }
+  .slide.exit {
+    opacity: 0; transform: translateX(-60px);
+  }
+
+  /* ── NAV ── */
+  .nav {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 16px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 50px;
+    padding: 10px 20px;
+    z-index: 1000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  }
+  .nav-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    background: var(--galp-light);
+    color: var(--galp-dark);
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: var(--galp-orange); color: white; transform: scale(1.05); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .nav-btn:disabled:hover { background: var(--galp-light); color: var(--galp-dark); transform: none; }
+  .slide-counter { font-size: 13px; font-weight: 600; color: var(--galp-gray); min-width: 50px; text-align: center; }
+  .dots { display: flex; gap: 6px; align-items: center; }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #DDD; cursor: pointer;
+    transition: all 0.3s;
+  }
+  .dot.active { background: var(--galp-orange); transform: scale(1.3); }
+
+  /* ── SLIDE 1: COVER ── */
+  #s1 { background: var(--galp-white); }
+  .s1-left {
+    flex: 0 0 45%;
+    display: flex; flex-direction: column;
+    justify-content: center;
+    padding: 60px 50px 60px 70px;
+  }
+  .s1-right {
+    flex: 1;
+    background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 50%, #E65C00 100%);
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .s1-right::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80') center/cover;
+    opacity: 0.25;
+  }
+  .s1-right-content {
+    position: relative; z-index: 1;
+    text-align: center; color: white;
+    padding: 40px;
+  }
+  .s1-right-content h2 {
+    font-size: 42px; font-weight: 900;
+    line-height: 1.1;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+  .s1-right-content p {
+    font-size: 16px; opacity: 0.9;
+    margin-top: 16px; font-weight: 400;
+    max-width: 320px; margin: 16px auto 0;
+  }
+  .galp-logo { display: flex; align-items: center; gap: 8px; margin-bottom: 48px; }
+  .galp-logo-text { font-size: 28px; font-weight: 900; color: var(--galp-orange); letter-spacing: -0.5px; }
+  .galp-logo-g {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--galp-orange);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 900; font-size: 18px;
+  }
+  .s1-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    color: var(--galp-orange); text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .s1-title { font-size: 56px; font-weight: 900; line-height: 1.0; color: var(--galp-dark); }
+  .s1-subtitle {
+    font-size: 16px; color: var(--galp-gray); line-height: 1.6;
+    margin-top: 20px; max-width: 340px;
+  }
+  .s1-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--galp-orange); color: white;
+    border-radius: 30px; padding: 10px 20px;
+    font-size: 13px; font-weight: 700;
+    margin-top: 40px;
+    animation: pulse 2.5s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+  }
+
+  /* ── SLIDE 2: CONTEXT ── */
+  #s2 .s1-right { background: linear-gradient(160deg, #1A1A1A 0%, #2D2D2D 100%); }
+  #s2 .s1-right::before { opacity: 0.15; }
+  .stats-row { display: flex; gap: 32px; margin-top: 40px; }
+  .stat-box {
+    text-align: center;
+    padding: 24px 28px;
+    border-radius: 16px;
+    background: var(--galp-light);
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .stat-box:hover { border-color: var(--galp-orange); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(255,107,0,0.15); }
+  .stat-num { font-size: 44px; font-weight: 900; color: var(--galp-orange); line-height: 1; }
+  .stat-label { font-size: 12px; font-weight: 600; color: var(--galp-gray); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── SLIDE 3: OBJECTIVES ── */
+  #s3 { flex-direction: column; padding: 60px 70px; }
+  .slide-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    color: var(--galp-orange); text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .slide-title { font-size: 40px; font-weight: 900; color: var(--galp-dark); margin-bottom: 40px; }
+  .themes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; flex: 1; }
+  .theme-card {
+    border-radius: 20px;
+    padding: 32px 24px;
+    display: flex; flex-direction: column;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative; overflow: hidden;
+    border: 2px solid #EBEBEB;
+  }
+  .theme-card::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,107,0,0.08), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .theme-card:hover { transform: translateY(-6px); border-color: var(--galp-orange); box-shadow: 0 12px 36px rgba(255,107,0,0.15); }
+  .theme-card:hover::after { opacity: 1; }
+  .theme-num { font-size: 11px; font-weight: 800; color: var(--galp-orange); letter-spacing: 2px; margin-bottom: 16px; }
+  .theme-icon { font-size: 40px; margin-bottom: 16px; }
+  .theme-name { font-size: 18px; font-weight: 800; color: var(--galp-dark); margin-bottom: 10px; }
+  .theme-desc { font-size: 13px; color: var(--galp-gray); line-height: 1.6; }
+
+  /* ── SLIDE 4: METHODOLOGY ── */
+  #s4 { flex-direction: column; padding: 60px 70px; }
+  .phases-row { display: flex; gap: 0; flex: 1; align-items: stretch; }
+  .phase-item {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center;
+    padding: 28px 16px;
+    cursor: pointer;
+    position: relative;
+    border-radius: 16px;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+  }
+  .phase-item:hover, .phase-item.open {
+    background: rgba(255,107,0,0.06);
+    border-color: var(--galp-orange);
+  }
+  .phase-connector {
+    position: absolute; top: 48px; right: -1px;
+    width: 2px; height: 30px;
+    background: #E0E0E0;
+  }
+  .phase-item:last-child .phase-connector { display: none; }
+  .phase-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--galp-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin-bottom: 16px;
+    transition: all 0.3s;
+    border: 2px solid #E0E0E0;
+  }
+  .phase-item:hover .phase-circle, .phase-item.open .phase-circle {
+    background: var(--galp-orange);
+    border-color: var(--galp-orange);
+    transform: scale(1.1);
+  }
+  .phase-num { font-size: 11px; font-weight: 800; color: var(--galp-orange); letter-spacing: 2px; margin-bottom: 6px; }
+  .phase-name { font-size: 14px; font-weight: 700; color: var(--galp-dark); line-height: 1.3; }
+  .phase-detail {
+    margin-top: 10px; font-size: 12px; color: var(--galp-gray);
+    line-height: 1.5; opacity: 0;
+    max-height: 0; overflow: hidden;
+    transition: all 0.4s;
+  }
+  .phase-item.open .phase-detail { opacity: 1; max-height: 80px; }
+  .phase-hint {
+    font-size: 12px; color: var(--galp-gray);
+    margin-top: 24px; text-align: center;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .phase-hint span { font-size: 16px; }
+
+  /* ── SLIDE 5: METAS ── */
+  #s5 { flex-direction: column; padding: 60px 70px; }
+  .metas-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; flex: 1; align-items: center; }
+  .meta-card {
+    border-radius: 20px;
+    padding: 36px 24px;
+    text-align: center;
+    background: var(--galp-dark);
+    color: white;
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .meta-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.2); }
+  .meta-card:nth-child(1) { background: var(--galp-orange); }
+  .meta-card:nth-child(2) { background: #1A1A1A; }
+  .meta-card:nth-child(3) { background: #2D2D2D; }
+  .meta-card:nth-child(4) { background: #FF8C00; }
+  .meta-big { font-size: 64px; font-weight: 900; line-height: 1; }
+  .meta-label-top { font-size: 11px; font-weight: 700; letter-spacing: 2px; opacity: 0.7; margin-bottom: 8px; text-transform: uppercase; }
+  .meta-label-bot { font-size: 13px; font-weight: 600; opacity: 0.8; margin-top: 8px; }
+
+  /* ── SLIDE 6: RESULTS ── */
+  #s6 { flex-direction: column; padding: 60px 70px; }
+  .results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; flex: 1; }
+  .result-card {
+    border-radius: 20px;
+    padding: 36px 28px;
+    background: var(--galp-light);
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    cursor: default;
+    display: flex; flex-direction: column;
+  }
+  .result-card:hover { border-color: var(--galp-orange); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(255,107,0,0.1); }
+  .result-icon { font-size: 48px; margin-bottom: 20px; }
+  .result-title { font-size: 20px; font-weight: 800; color: var(--galp-dark); margin-bottom: 12px; }
+  .result-desc { font-size: 14px; color: var(--galp-gray); line-height: 1.7; flex: 1; }
+
+  /* ── SLIDE 7: BUDGET ── */
+  #s7 { flex-direction: column; padding: 60px 70px; }
+  .budget-total {
+    display: flex; align-items: baseline; gap: 12px;
+    margin-bottom: 36px;
+  }
+  .budget-total-num { font-size: 72px; font-weight: 900; color: var(--galp-orange); line-height: 1; }
+  .budget-total-sub { font-size: 16px; color: var(--galp-gray); }
+  .budget-items { display: flex; flex-direction: column; gap: 12px; flex: 1; justify-content: center; }
+  .budget-row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: var(--galp-light);
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .budget-row:hover { background: rgba(255,107,0,0.08); transform: translateX(4px); }
+  .budget-bar-wrap { flex: 1; height: 6px; background: #E0E0E0; border-radius: 3px; }
+  .budget-bar { height: 100%; border-radius: 3px; background: var(--galp-orange); transition: width 1s ease; }
+  .budget-name { font-size: 14px; font-weight: 600; color: var(--galp-dark); width: 200px; }
+  .budget-eur { font-size: 15px; font-weight: 800; color: var(--galp-orange); width: 60px; text-align: right; }
+  .budget-mzn { font-size: 12px; color: var(--galp-gray); width: 90px; text-align: right; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 3px; background: rgba(0,0,0,0.08);
+    z-index: 1000;
+  }
+  .progress-fill {
+    height: 100%; background: var(--galp-orange);
+    transition: width 0.4s ease;
+  }
+
+  /* ── KEYBOARD HINT ── */
+  .kb-hint {
+    position: fixed; top: 16px; right: 20px;
+    font-size: 11px; color: rgba(0,0,0,0.3);
+    font-weight: 500; z-index: 999;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .slide.active .anim { animation: fadeUp 0.5s ease forwards; }
+  .slide.active .anim-1 { animation-delay: 0.1s; opacity: 0; }
+  .slide.active .anim-2 { animation-delay: 0.2s; opacity: 0; }
+  .slide.active .anim-3 { animation-delay: 0.3s; opacity: 0; }
+  .slide.active .anim-4 { animation-delay: 0.4s; opacity: 0; }
+  .slide.active .anim-5 { animation-delay: 0.5s; opacity: 0; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+<div class="kb-hint">← → para navegar &nbsp;|&nbsp; ESC para overview</div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: COVER -->
+  <div class="slide active" id="s1">
+    <div class="s1-left">
+      <div class="galp-logo anim anim-1">
+        <div class="galp-logo-g">g</div>
+        <span class="galp-logo-text">galp</span>
+      </div>
+      <div class="s1-eyebrow anim anim-2">GALP · MOZAMBIQUE · 2025</div>
+      <div class="s1-title anim anim-3">EduGalp</div>
+      <div class="s1-subtitle anim anim-4">
+        Formação para o Futuro — um programa de educação para a sustentabilidade nas escolas de Moçambique.
+      </div>
+      <div class="s1-badge anim anim-5">
+        🎓 Programa Educativo 2025
+      </div>
+    </div>
+    <div class="s1-right">
+      <div class="s1-right-content">
+        <h2>Educar.<br>Inovar.<br>Transformar.</h2>
+        <p>O Futuro É Teu</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: CONTEXT -->
+  <div class="slide" id="s2">
+    <div class="s1-right" style="flex:0 0 48%; order:1;">
+      <div class="s1-right-content">
+        <div style="font-size:64px;">🏫</div>
+        <h2 style="font-size:32px; margin-top:16px;">Os jovens são os agentes de mudança de amanhã</h2>
+      </div>
+    </div>
+    <div class="s1-left" style="flex:1; order:2; padding:60px 70px 60px 50px;">
+      <div class="slide-eyebrow anim anim-1">CONTEXTUALIZAÇÃO</div>
+      <div class="slide-title anim anim-2" style="margin-bottom:16px;">O Futuro Começa Hoje</div>
+      <div class="s1-subtitle anim anim-3" style="margin-top:0;">
+        Os jovens estudantes de Moçambique são os agentes de mudança de amanhã. O EduGalp aproxima a Galp das escolas, criando consciência sobre sustentabilidade de forma prática e interativa.
+      </div>
+      <div class="stats-row anim anim-4">
+        <div class="stat-box">
+          <div class="stat-num">4</div>
+          <div class="stat-label">Escolas</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">480</div>
+          <div class="stat-label">Estudantes</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">5</div>
+          <div class="stat-label">Fases</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: OBJECTIVES -->
+  <div class="slide" id="s3">
+    <div class="slide-eyebrow anim anim-1">OBJETIVOS</div>
+    <div class="slide-title anim anim-2">4 Temas de Sustentabilidade</div>
+    <div class="themes-grid">
+      <div class="theme-card anim anim-2">
+        <div class="theme-num">01</div>
+        <div class="theme-icon">♻️</div>
+        <div class="theme-name">Gestão de Resíduos</div>
+        <div class="theme-desc">Práticas de reciclagem, redução e reutilização no dia a dia.</div>
+      </div>
+      <div class="theme-card anim anim-3">
+        <div class="theme-num">02</div>
+        <div class="theme-icon">⚡</div>
+        <div class="theme-name">Carvão vs Gás</div>
+        <div class="theme-desc">Comparação de impacto ambiental e vantagens do gás natural.</div>
+      </div>
+      <div class="theme-card anim anim-4">
+        <div class="theme-num">03</div>
+        <div class="theme-icon">☀️</div>
+        <div class="theme-name">Energias Renováveis</div>
+        <div class="theme-desc">Solar, eólica e outras fontes limpas para um futuro sustentável.</div>
+      </div>
+      <div class="theme-card anim anim-5">
+        <div class="theme-num">04</div>
+        <div class="theme-icon">💧</div>
+        <div class="theme-name">Consumo Responsável de Água</div>
+        <div class="theme-desc">Gestão eficiente e preservação dos recursos hídricos.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: METHODOLOGY -->
+  <div class="slide" id="s4">
+    <div class="slide-eyebrow anim anim-1">METODOLOGIA</div>
+    <div class="slide-title anim anim-2">A Jornada em 5 Fases</div>
+    <div class="phases-row anim anim-3">
+      <div class="phase-item" onclick="togglePhase(this)">
+        <div class="phase-connector"></div>
+        <div class="phase-circle">📱</div>
+        <div class="phase-num">FASE 01</div>
+        <div class="phase-name">Desenvolvimento da App</div>
+        <div class="phase-detail">Criação de uma aplicação interativa para quizzes e conteúdos de sustentabilidade, acessível nas escolas.</div>
+      </div>
+      <div class="phase-item" onclick="togglePhase(this)">
+        <div class="phase-connector"></div>
+        <div class="phase-circle">📚</div>
+        <div class="phase-num">FASE 02</div>
+        <div class="phase-name">Preparação dos Conteúdos</div>
+        <div class="phase-detail">Desenvolvimento de materiais educativos alinhados aos 4 temas de sustentabilidade.</div>
+      </div>
+      <div class="phase-item" onclick="togglePhase(this)">
+        <div class="phase-connector"></div>
+        <div class="phase-circle">🏫</div>
+        <div class="phase-num">FASE 03</div>
+        <div class="phase-name">Sessões de Workshops</div>
+        <div class="phase-detail">Realização de workshops presenciais nas 4 escolas participantes.</div>
+      </div>
+      <div class="phase-item" onclick="togglePhase(this)">
+        <div class="phase-connector"></div>
+        <div class="phase-circle">🎯</div>
+        <div class="phase-num">FASE 04</div>
+        <div class="phase-name">Quizzes via App</div>
+        <div class="phase-detail">Avaliação dos conhecimentos adquiridos através de quizzes na aplicação EduGalp.</div>
+      </div>
+      <div class="phase-item" onclick="togglePhase(this)">
+        <div class="phase-connector"></div>
+        <div class="phase-circle">🏆</div>
+        <div class="phase-num">FASE 05</div>
+        <div class="phase-name">Certificados Digitais</div>
+        <div class="phase-detail">Emissão de certificados digitais para todos os estudantes que completem o programa.</div>
+      </div>
+    </div>
+    <div class="phase-hint anim anim-4"><span>👆</span> Clique em cada fase para saber mais</div>
+  </div>
+
+  <!-- SLIDE 5: METAS -->
+  <div class="slide" id="s5">
+    <div class="slide-eyebrow anim anim-1">METAS</div>
+    <div class="slide-title anim anim-2">Alcance do Programa</div>
+    <div class="metas-grid">
+      <div class="meta-card anim anim-2">
+        <div class="meta-label-top">Escolas</div>
+        <div class="meta-big">4</div>
+        <div class="meta-label-bot">Participantes</div>
+      </div>
+      <div class="meta-card anim anim-3">
+        <div class="meta-label-top">Estudantes</div>
+        <div class="meta-big">472</div>
+        <div class="meta-label-bot">Alcançados</div>
+      </div>
+      <div class="meta-card anim anim-4">
+        <div class="meta-label-top">Sessões</div>
+        <div class="meta-big">2</div>
+        <div class="meta-label-bot">Por escola</div>
+      </div>
+      <div class="meta-card anim anim-5">
+        <div class="meta-label-top">Alunos</div>
+        <div class="meta-big">109</div>
+        <div class="meta-label-bot">Por sessão</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: RESULTS -->
+  <div class="slide" id="s6">
+    <div class="slide-eyebrow anim anim-1">RESULTADOS ESPERADOS</div>
+    <div class="slide-title anim anim-2">O Impacto que Queremos Criar</div>
+    <div class="results-grid">
+      <div class="result-card anim anim-3">
+        <div class="result-icon">🎓</div>
+        <div class="result-title">Futuros Colaboradores</div>
+        <div class="result-desc">Jovens com conhecimento base de sustentabilidade, prontos para integrar a Galp com uma visão consciente.</div>
+      </div>
+      <div class="result-card anim anim-4">
+        <div class="result-icon">🌱</div>
+        <div class="result-title">Comunidade Escolar</div>
+        <div class="result-desc">Maior envolvimento das escolas em práticas sustentáveis, criando um efeito multiplicador.</div>
+      </div>
+      <div class="result-card anim anim-5">
+        <div class="result-icon">🔥</div>
+        <div class="result-title">Crescimento de Mercado</div>
+        <div class="result-desc">Aumento do consumo de gás Galp e posicionamento como líder em sustentabilidade juvenil.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: BUDGET -->
+  <div class="slide" id="s7">
+    <div class="slide-eyebrow anim anim-1">ORÇAMENTO ANUAL</div>
+    <div class="slide-title anim anim-2" style="margin-bottom:8px;">Investimento</div>
+    <div class="budget-total anim anim-2">
+      <div class="budget-total-num">€ 4.200</div>
+      <div class="budget-total-sub">/ 336.000 MZN</div>
+    </div>
+    <div class="budget-items">
+      <div class="budget-row anim anim-2">
+        <div class="budget-name">☕ Coffee Break</div>
+        <div class="budget-bar-wrap"><div class="budget-bar" style="width:37%"></div></div>
+        <div class="budget-eur">€ 1.550</div>
+        <div class="budget-mzn">125.000 MZN</div>
+      </div>
+      <div class="budget-row anim anim-3">
+        <div class="budget-name">🖥️ Equip. Técnico</div>
+        <div class="budget-bar-wrap"><div class="budget-bar" style="width:23%"></div></div>
+        <div class="budget-eur">€ 950</div>
+        <div class="budget-mzn">77.000 MZN</div>
+      </div>
+      <div class="budget-row anim anim-3">
+        <div class="budget-name">📱 Dev. da App</div>
+        <div class="budget-bar-wrap"><div class="budget-bar" style="width:17%"></div></div>
+        <div class="budget-eur">€ 700</div>
+        <div class="budget-mzn">57.400 MZN</div>
+      </div>
+      <div class="budget-row anim anim-4">
+        <div class="budget-name">🏆 Kit Premiação</div>
+        <div class="budget-bar-wrap"><div class="budget-bar" style="width:12%"></div></div>
+        <div class="budget-eur">€ 500</div>
+        <div class="budget-mzn">40.400 MZN</div>
+      </div>
+      <div class="budget-row anim anim-4">
+        <div class="budget-name">🚗 Deslocação</div>
+        <div class="budget-bar-wrap"><div class="budget-bar" style="width:6%"></div></div>
+        <div class="budget-eur">€ 250</div>
+        <div class="budget-mzn">20.000 MZN</div>
+      </div>
+      <div class="budget-row anim anim-5">
+        <div class="budget-name">📣 Marketing</div>
+        <div class="budget-bar-wrap"><div class="budget-bar" style="width:5%"></div></div>
+        <div class="budget-eur">€ 200</div>
+        <div class="budget-mzn">16.000 MZN</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)" disabled>←</button>
+  <div class="dots" id="dots"></div>
+  <span class="slide-counter" id="counter">1 / 7</span>
+  <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">→</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+  let isAnimating = false;
+
+  // Build dots
+  const dotsEl = document.getElementById('dots');
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    if (isAnimating || n === current) return;
+    isAnimating = true;
+
+    slides[current].classList.add('exit');
+    slides[current].classList.remove('active');
+
+    setTimeout(() => {
+      slides[current].classList.remove('exit');
+      current = n;
+      slides[current].classList.add('active');
+      updateUI();
+      setTimeout(() => { isAnimating = false; }, 600);
+    }, 300);
+  }
+
+  function changeSlide(dir) {
+    const next = current + dir;
+    if (next < 0 || next >= total) return;
+    goTo(next);
+  }
+
+  function updateUI() {
+    document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+    document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+  }
+
+  function togglePhase(el) {
+    const wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.phase-item').forEach(p => p.classList.remove('open'));
+    if (!wasOpen) el.classList.add('open');
+  }
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') changeSlide(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changeSlide(-1);
+  });
+
+  // Touch/swipe
+  let touchX = 0;
+  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = touchX - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 50) changeSlide(dx > 0 ? 1 : -1);
+  });
+
+  updateUI();
+</script>
+</body>
+</html>
