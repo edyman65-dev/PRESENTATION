@@ -3,833 +3,856 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EduGalp — 3D Presentation</title>
+<title>EduGalp — Formação para o Futuro</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a12;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif;color:#fff}
-#canvas-container{position:fixed;inset:0;z-index:0}
-canvas{display:block}
+html,body{width:100%;height:100%;overflow:hidden;background:#0F0A00}
+#cv{position:fixed;inset:0;z-index:0}
+#ui{position:fixed;inset:0;z-index:10;pointer-events:none;font-family:'Inter',sans-serif}
 
-/* HUD */
-#hud{position:fixed;inset:0;z-index:10;pointer-events:none}
-
-/* Top bar */
-#topbar{
-  position:absolute;top:0;left:0;right:0;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:20px 40px;
-  background:linear-gradient(180deg,rgba(0,0,0,0.7) 0%,transparent 100%);
+/* ─── GALP LOGO ─── */
+#galp-logo{
+  position:absolute;top:22px;left:40px;
+  display:flex;align-items:center;gap:11px;
 }
-.logo{display:flex;align-items:center;gap:10px}
-.logo-g{width:36px;height:36px;border-radius:50%;background:#FF6B00;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px}
-.logo-text{font-size:22px;font-weight:900;color:#FF6B00;letter-spacing:-0.5px}
-#slide-tag{font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.4);text-transform:uppercase}
+#galp-logo svg{width:44px;height:44px}
+#galp-logotype{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:32px;letter-spacing:2px;
+  color:#FF6B00;line-height:1;
+}
+.logo-sub{font-size:10px;letter-spacing:3px;color:rgba(255,150,50,.55);text-transform:uppercase;margin-top:2px}
 
-/* Speech bubble */
-#speech{
+/* eyebrow top right */
+#eyebrow-tag{
+  position:absolute;top:30px;right:40px;
+  font-size:10px;letter-spacing:3.5px;color:rgba(255,150,50,.5);
+  text-transform:uppercase;font-weight:600;
+}
+
+/* ─── SLIDE CONTENT ─── */
+.slide-wrap{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity .55s ease;
+}
+.slide-wrap.active{opacity:1}
+
+/* headline */
+.headline{
   position:absolute;
-  bottom:200px;right:60px;
-  max-width:320px;
-  background:rgba(15,15,30,0.92);
-  border:1px solid rgba(255,107,0,0.4);
-  border-radius:20px 20px 4px 20px;
-  padding:20px 24px;
-  pointer-events:none;
-  opacity:0;
-  transform:translateY(10px) scale(0.95);
-  transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
-  backdrop-filter:blur(20px);
-  box-shadow:0 0 40px rgba(255,107,0,0.15);
+  font-family:'Bebas Neue',sans-serif;
+  color:#fff;line-height:.92;letter-spacing:1px;
+  text-shadow:0 0 60px rgba(255,107,0,.25);
 }
-#speech.show{opacity:1;transform:translateY(0) scale(1)}
-#speech-eyebrow{font-size:10px;letter-spacing:2px;color:#FF6B00;text-transform:uppercase;margin-bottom:6px}
-#speech-title{font-size:18px;font-weight:700;line-height:1.3;margin-bottom:8px}
-#speech-body{font-size:13px;line-height:1.6;color:rgba(255,255,255,0.7)}
-#speech-tail{
-  position:absolute;bottom:-10px;right:20px;
-  width:20px;height:10px;overflow:hidden;
-}
-#speech-tail::after{
-  content:'';position:absolute;top:-10px;right:5px;
-  width:15px;height:15px;
-  background:rgba(15,15,30,0.92);
-  border:1px solid rgba(255,107,0,0.4);
-  transform:rotate(45deg);
-}
-
-/* Stat cards floating */
-.stat-float{
+.subtext{
   position:absolute;
-  background:rgba(10,10,20,0.88);
-  border:1px solid rgba(255,107,0,0.3);
-  border-radius:16px;padding:16px 20px;
-  pointer-events:none;
-  opacity:0;transform:translateY(20px);
-  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  backdrop-filter:blur(16px);
-  min-width:120px;text-align:center;
+  color:rgba(255,180,100,.65);
+  line-height:1.75;font-weight:400;font-size:14px;
 }
-.stat-float.show{opacity:1;transform:translateY(0)}
-.stat-num{font-size:40px;font-weight:900;color:#FF6B00;line-height:1}
-.stat-lbl{font-size:11px;letter-spacing:1.5px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-top:4px}
-#sf1{top:30%;left:4%}
-#sf2{top:42%;left:4%}
-#sf3{top:54%;left:4%}
-
-/* Theme cards */
-.theme-float{
-  position:absolute;
-  background:rgba(10,10,20,0.88);
-  border:1px solid rgba(255,107,0,0.25);
-  border-radius:14px;padding:14px 18px;
-  pointer-events:none;
-  opacity:0;transform:scale(0.8);
-  transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
-  backdrop-filter:blur(16px);
-  width:170px;
+.eyebrow-slide{
+  position:absolute;top:90px;left:50px;
+  font-size:10px;letter-spacing:3.5px;text-transform:uppercase;
+  color:rgba(255,107,0,.7);font-weight:600;
 }
-.theme-float.show{opacity:1;transform:scale(1)}
-.theme-float .tf-icon{font-size:24px;margin-bottom:6px}
-.theme-float .tf-name{font-size:13px;font-weight:700}
-.theme-float .tf-desc{font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px;line-height:1.4}
-#tf1{top:22%;left:4%}
-#tf2{top:42%;left:4%}
-#tf3{top:22%;right:55%}
-#tf4{top:42%;right:55%}
 
-/* Phase steps */
-.phase-step{
-  position:absolute;
-  background:rgba(10,10,20,0.88);
-  border-left:3px solid #FF6B00;
-  border-radius:0 12px 12px 0;
-  padding:12px 18px;
-  pointer-events:none;
-  opacity:0;transform:translateX(-20px);
-  transition:all 0.4s ease;
-  backdrop-filter:blur(16px);
-  width:200px;
+/* count number */
+.count-num{
+  font-family:'Bebas Neue',sans-serif;
+  color:#FF6B00;line-height:1;
+  text-shadow:0 0 40px rgba(255,107,0,.5);
 }
-.phase-step.show{opacity:1;transform:translateX(0)}
-.phase-step .ps-num{font-size:10px;letter-spacing:2px;color:#FF6B00;font-weight:700}
-.phase-step .ps-name{font-size:13px;font-weight:700;margin-top:2px}
-#ps1{top:18%;left:4%}
-#ps2{top:31%;left:4%}
-#ps3{top:44%;left:4%}
-#ps4{top:57%;left:4%}
-#ps5{top:70%;left:4%}
-
-/* Budget bars */
-#budget-panel{
-  position:absolute;top:20%;right:4%;
-  width:260px;
-  opacity:0;transform:translateX(20px);
-  transition:all 0.5s ease;
-  pointer-events:none;
+.count-label{
+  font-size:11px;letter-spacing:2.5px;text-transform:uppercase;
+  color:rgba(255,200,120,.45);margin-top:5px;font-weight:500;
 }
-#budget-panel.show{opacity:1;transform:translateX(0)}
-.brow{margin-bottom:10px}
-.brow-top{display:flex;justify-content:space-between;margin-bottom:5px}
-.brow-name{font-size:12px;color:rgba(255,255,255,0.7)}
-.brow-val{font-size:12px;font-weight:700;color:#FF6B00}
-.brow-track{height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden}
-.brow-fill{height:100%;background:#FF6B00;border-radius:3px;width:0;transition:width 1.2s ease}
 
-/* Nav */
+/* stat cluster */
+.stat-cluster{position:absolute;display:flex;gap:28px}
+.stat-item{
+  text-align:center;
+  padding:22px 28px;
+  background:rgba(255,107,0,.07);
+  border:1px solid rgba(255,107,0,.2);
+  border-radius:18px;
+  transition:all .3s;cursor:default;
+}
+.stat-item:hover{background:rgba(255,107,0,.14);border-color:rgba(255,107,0,.45);transform:translateY(-4px)}
+
+/* theme cards */
+.theme-grid{position:absolute;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.theme-card{
+  background:rgba(255,107,0,.06);border:1px solid rgba(255,107,0,.18);
+  border-radius:14px;padding:18px 20px;cursor:default;transition:all .3s;
+}
+.theme-card:hover{background:rgba(255,107,0,.13);border-color:rgba(255,107,0,.45);transform:translateX(4px)}
+.tc-num{font-size:9px;letter-spacing:3px;color:#FF6B00;font-weight:700;margin-bottom:5px}
+.tc-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:3px}
+.tc-desc{font-size:11px;color:rgba(255,200,100,.45);line-height:1.5}
+
+/* phase list */
+.phase-list{position:absolute;display:flex;flex-direction:column;gap:9px}
+.phase-row{
+  display:flex;align-items:center;gap:14px;
+  background:rgba(255,107,0,.05);border:1px solid rgba(255,107,0,.12);
+  border-radius:12px;padding:13px 18px;transition:all .3s;cursor:default;
+}
+.phase-row:hover{background:rgba(255,107,0,.12);border-color:rgba(255,107,0,.4);transform:translateX(6px)}
+.phase-dot{
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(255,107,0,.12);border:1px solid #FF6B00;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#FF6B00;flex-shrink:0;
+}
+.phase-name{font-size:13px;font-weight:600;color:#fff}
+.phase-sub{font-size:10px;color:rgba(255,200,100,.4);margin-top:2px}
+
+/* metas */
+.meta-grid{position:absolute;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.meta-card{
+  background:rgba(255,107,0,.07);border:1px solid rgba(255,107,0,.2);
+  border-radius:18px;padding:26px 30px;text-align:center;
+  transition:all .3s;cursor:default;
+}
+.meta-card:hover{background:rgba(255,107,0,.15);border-color:rgba(255,107,0,.5);transform:translateY(-5px)}
+
+/* result cards */
+.result-list{position:absolute;display:flex;flex-direction:column;gap:12px}
+.result-card{
+  display:flex;align-items:flex-start;gap:14px;
+  background:rgba(255,107,0,.05);border:1px solid rgba(255,107,0,.12);
+  border-radius:14px;padding:16px 20px;transition:all .3s;cursor:default;
+}
+.result-card:hover{background:rgba(255,107,0,.11);border-color:rgba(255,107,0,.38);transform:translateX(5px)}
+.rc-icon{width:42px;height:42px;border-radius:10px;background:rgba(255,107,0,.12);border:1px solid rgba(255,107,0,.3);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.rc-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px}
+.rc-desc{font-size:11px;color:rgba(255,200,100,.45);line-height:1.5}
+
+/* budget */
+.budget-wrap{position:absolute;width:310px}
+.bt-eur{font-family:'Bebas Neue',sans-serif;font-size:68px;color:#FF6B00;line-height:1;text-shadow:0 0 50px rgba(255,107,0,.4)}
+.bt-mzn{font-size:12px;color:rgba(255,200,100,.35);margin-top:3px;letter-spacing:1px}
+.bitem{margin-bottom:11px}
+.bi-header{display:flex;justify-content:space-between;margin-bottom:5px}
+.bi-name{font-size:11px;color:rgba(255,200,120,.6);font-weight:500}
+.bi-val{font-size:11px;font-weight:700;color:#FF6B00}
+.bi-track{height:4px;background:rgba(255,107,0,.1);border-radius:2px;overflow:hidden}
+.bi-fill{height:100%;background:linear-gradient(90deg,#FF6B00,#FFAA00);border-radius:2px;width:0;transition:width 1.5s cubic-bezier(.4,0,.2,1)}
+
+/* ─── PROGRESS ─── */
+#prog{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,107,0,.1)}
+#prog-fill{height:100%;background:#FF6B00;transition:width .5s ease;box-shadow:0 0 8px #FF6B00}
+
+/* ─── NAV ─── */
 #nav{
-  position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
   display:flex;align-items:center;gap:12px;
-  background:rgba(10,10,20,0.8);
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:50px;padding:10px 20px;
-  pointer-events:all;
-  backdrop-filter:blur(20px);
+  background:rgba(15,10,0,.88);
+  border:1px solid rgba(255,107,0,.2);
+  border-radius:60px;padding:9px 20px;
+  pointer-events:all;backdrop-filter:blur(20px);
 }
 .nbtn{
-  width:40px;height:40px;border-radius:50%;
-  border:1px solid rgba(255,255,255,0.15);
-  background:transparent;color:#fff;
-  cursor:pointer;font-size:16px;
-  transition:all 0.2s;display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:50%;
+  border:1px solid rgba(255,107,0,.25);background:transparent;
+  color:#fff;cursor:pointer;font-size:14px;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;
 }
-.nbtn:hover{background:#FF6B00;border-color:#FF6B00;transform:scale(1.1)}
-.nbtn:disabled{opacity:0.3;cursor:not-allowed}
-.nbtn:disabled:hover{background:transparent;border-color:rgba(255,255,255,0.15);transform:none}
-.ndot{
-  width:8px;height:8px;border-radius:50%;
-  background:rgba(255,255,255,0.25);cursor:pointer;
-  transition:all 0.3s;pointer-events:all;
+.nbtn:hover{background:#FF6B00;border-color:#FF6B00}
+.nbtn:disabled{opacity:.2;cursor:not-allowed}
+.nbtn:disabled:hover{background:transparent;border-color:rgba(255,107,0,.25)}
+.ndot{width:7px;height:7px;border-radius:50%;background:rgba(255,107,0,.25);cursor:pointer;transition:all .3s;pointer-events:all}
+.ndot.on{background:#FF6B00;transform:scale(1.5);box-shadow:0 0 8px #FF6B00}
+#nctr{font-size:11px;font-weight:600;color:rgba(255,150,50,.4);min-width:40px;text-align:center}
+#kbhint{position:absolute;bottom:30px;right:36px;font-size:10px;color:rgba(255,150,50,.2)}
+
+/* orange vignette */
+#vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 70% 50%, transparent 35%, rgba(15,10,0,.7) 100%);
 }
-.ndot.on{background:#FF6B00;transform:scale(1.4)}
-#nctr{font-size:12px;font-weight:600;color:rgba(255,255,255,0.4);min-width:44px;text-align:center}
-
-/* Progress */
-#prog{position:absolute;top:0;left:0;right:0;height:2px;background:rgba(255,255,255,0.06)}
-#prog-fill{height:100%;background:#FF6B00;transition:width 0.4s ease}
-
-/* KB hint */
-#kbhint{position:absolute;bottom:30px;right:30px;font-size:11px;color:rgba(255,255,255,0.2)}
-
-/* Result cards */
-.res-card{
-  position:absolute;
-  background:rgba(10,10,20,0.88);
-  border:1px solid rgba(255,107,0,0.25);
-  border-radius:16px;padding:18px 20px;
-  width:210px;
-  pointer-events:none;
-  opacity:0;transform:translateY(20px);
-  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  backdrop-filter:blur(16px);
-}
-.res-card.show{opacity:1;transform:translateY(0)}
-.rc-icon{font-size:28px;margin-bottom:8px}
-.rc-title{font-size:14px;font-weight:700;margin-bottom:6px}
-.rc-desc{font-size:11px;color:rgba(255,255,255,0.55);line-height:1.5}
-#rc1{top:20%;left:4%}
-#rc2{top:20%;left:calc(4% + 230px)}
-#rc3{top:55%;left:4%}
-
-/* Meta big */
-.meta-big-card{
-  position:absolute;
-  background:rgba(255,107,0,0.12);
-  border:1px solid rgba(255,107,0,0.5);
-  border-radius:20px;padding:20px 28px;
-  pointer-events:none;
-  opacity:0;transform:scale(0.85);
-  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  text-align:center;
-}
-.meta-big-card.show{opacity:1;transform:scale(1)}
-.mbc-big{font-size:56px;font-weight:900;color:#FF6B00;line-height:1}
-.mbc-lbl{font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-top:4px}
-#mb1{top:20%;left:4%}
-#mb2{top:20%;left:calc(4% + 160px)}
-#mb3{top:50%;left:4%}
-#mb4{top:50%;left:calc(4% + 160px)}
-
-/* Ambient glow */
-.glow-orb{
-  position:absolute;border-radius:50%;filter:blur(80px);
-  pointer-events:none;opacity:0.12;
+/* warm ground glow */
+#ground-glow{
+  position:absolute;bottom:0;left:0;right:0;height:200px;pointer-events:none;
+  background:linear-gradient(transparent, rgba(255,80,0,.04));
 }
 </style>
 </head>
 <body>
-<div id="canvas-container"></div>
+<canvas id="cv"></canvas>
+<div id="ui">
+  <div id="vignette"></div>
+  <div id="ground-glow"></div>
 
-<div id="hud">
-  <!-- Ambient glow -->
-  <div class="glow-orb" style="width:400px;height:400px;background:#FF6B00;bottom:-100px;right:200px"></div>
-  <div class="glow-orb" style="width:300px;height:300px;background:#6B00FF;top:-50px;left:100px"></div>
-
-  <!-- Progress -->
-  <div id="prog"><div id="prog-fill"></div></div>
-
-  <!-- Top bar -->
-  <div id="topbar">
-    <div class="logo">
-      <div class="logo-g">g</div>
-      <span class="logo-text">galp</span>
+  <!-- GALP LOGO -->
+  <div id="galp-logo">
+    <!-- Galp G mark -->
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="48" fill="#FF6B00"/>
+      <path d="M68 50H52v10h8.5C58 65.5 54.4 68 50 68c-9.9 0-18-8.1-18-18s8.1-18 18-18c4.6 0 8.8 1.8 11.9 4.7l7.1-7.1C64.6 25.4 57.7 22 50 22c-15.5 0-28 12.5-28 28s12.5 28 28 28c15.5 0 28-12.5 28-28v-0z" fill="white"/>
+    </svg>
+    <div>
+      <div id="galp-logotype">galp</div>
+      <div class="logo-sub">EduGalp · Moçambique</div>
     </div>
-    <div id="slide-tag">EDUGALP · 2025</div>
+  </div>
+  <div id="eyebrow-tag">Formação para o Futuro</div>
+
+  <!-- ── SLIDE 0: COVER ── -->
+  <div class="slide-wrap active" id="s0">
+    <div class="eyebrow-slide" style="top:95px">GALP · MOÇAMBIQUE · 2025</div>
+    <div class="headline" style="font-size:clamp(72px,11vw,148px);bottom:150px;left:50px">EDU<br>GALP</div>
+    <div class="subtext" style="bottom:80px;left:52px;max-width:400px">Educação para a sustentabilidade<br>nas escolas de Moçambique.</div>
   </div>
 
-  <!-- Speech bubble -->
-  <div id="speech">
-    <div id="speech-eyebrow"></div>
-    <div id="speech-title"></div>
-    <div id="speech-body"></div>
-    <div id="speech-tail"></div>
+  <!-- ── SLIDE 1: CONTEXTUALIZAÇÃO ── -->
+  <div class="slide-wrap" id="s1">
+    <div class="eyebrow-slide">CONTEXTUALIZAÇÃO</div>
+    <div class="headline" style="font-size:clamp(44px,6vw,86px);bottom:260px;left:50px">O FUTURO<br>COMEÇA HOJE</div>
+    <div class="subtext" style="bottom:210px;left:52px">Os jovens são os agentes de mudança de amanhã.</div>
+    <div class="stat-cluster" style="bottom:60px;left:50px">
+      <div class="stat-item"><div class="count-num" style="font-size:72px" data-target="4">0</div><div class="count-label">Escolas</div></div>
+      <div class="stat-item"><div class="count-num" style="font-size:72px" data-target="480">0</div><div class="count-label">Estudantes</div></div>
+      <div class="stat-item"><div class="count-num" style="font-size:72px" data-target="5">0</div><div class="count-label">Fases</div></div>
+    </div>
   </div>
 
-  <!-- Slide 2: Stat floats -->
-  <div class="stat-float" id="sf1"><div class="stat-num">4</div><div class="stat-lbl">Escolas</div></div>
-  <div class="stat-float" id="sf2"><div class="stat-num">480</div><div class="stat-lbl">Estudantes</div></div>
-  <div class="stat-float" id="sf3"><div class="stat-num">5</div><div class="stat-lbl">Fases</div></div>
-
-  <!-- Slide 3: Theme cards -->
-  <div class="theme-float" id="tf1"><div class="tf-icon">♻️</div><div class="tf-name">Gestão de Resíduos</div><div class="tf-desc">Reciclagem e reutilização no dia a dia</div></div>
-  <div class="theme-float" id="tf2"><div class="tf-icon">⚡</div><div class="tf-name">Carvão vs Gás</div><div class="tf-desc">Impacto ambiental e vantagens do gás</div></div>
-  <div class="theme-float" id="tf3"><div class="tf-icon">☀️</div><div class="tf-name">Energias Renováveis</div><div class="tf-desc">Solar, eólica e fontes limpas</div></div>
-  <div class="theme-float" id="tf4"><div class="tf-icon">💧</div><div class="tf-name">Consumo de Água</div><div class="tf-desc">Preservação dos recursos hídricos</div></div>
-
-  <!-- Slide 4: Phase steps -->
-  <div class="phase-step" id="ps1"><div class="ps-num">FASE 01</div><div class="ps-name">📱 Desenvolvimento da App</div></div>
-  <div class="phase-step" id="ps2"><div class="ps-num">FASE 02</div><div class="ps-name">📚 Preparação dos Conteúdos</div></div>
-  <div class="phase-step" id="ps3"><div class="ps-num">FASE 03</div><div class="ps-name">🏫 Sessões de Workshops</div></div>
-  <div class="phase-step" id="ps4"><div class="ps-num">FASE 04</div><div class="ps-name">🎯 Quizzes via App</div></div>
-  <div class="phase-step" id="ps5"><div class="ps-num">FASE 05</div><div class="ps-name">🏆 Certificados Digitais</div></div>
-
-  <!-- Slide 5: Metas -->
-  <div class="meta-big-card" id="mb1"><div class="mbc-big">4</div><div class="mbc-lbl">Escolas</div></div>
-  <div class="meta-big-card" id="mb2"><div class="mbc-big">472</div><div class="mbc-lbl">Estudantes</div></div>
-  <div class="meta-big-card" id="mb3"><div class="mbc-big">2</div><div class="mbc-lbl">Sessões/Escola</div></div>
-  <div class="meta-big-card" id="mb4"><div class="mbc-big">109</div><div class="mbc-lbl">Alunos/Sessão</div></div>
-
-  <!-- Slide 6: Results -->
-  <div class="res-card" id="rc1"><div class="rc-icon">🎓</div><div class="rc-title">Futuros Colaboradores</div><div class="rc-desc">Jovens com base em sustentabilidade, prontos para a Galp.</div></div>
-  <div class="res-card" id="rc2"><div class="rc-icon">🌱</div><div class="rc-title">Comunidade Escolar</div><div class="rc-desc">Efeito multiplicador nas práticas sustentáveis.</div></div>
-  <div class="res-card" id="rc3"><div class="rc-icon">🔥</div><div class="rc-title">Crescimento de Mercado</div><div class="rc-desc">Liderança em sustentabilidade juvenil.</div></div>
-
-  <!-- Slide 7: Budget -->
-  <div id="budget-panel">
-    <div style="font-size:11px;letter-spacing:2px;color:#FF6B00;text-transform:uppercase;margin-bottom:16px">Orçamento Anual</div>
-    <div style="font-size:48px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px">€ 4.200</div>
-    <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:24px">336.000 MZN</div>
-    <div class="brow"><div class="brow-top"><span class="brow-name">☕ Coffee Break</span><span class="brow-val">€1.550</span></div><div class="brow-track"><div class="brow-fill" style="--w:37%"></div></div></div>
-    <div class="brow"><div class="brow-top"><span class="brow-name">🖥️ Equip. Técnico</span><span class="brow-val">€950</span></div><div class="brow-track"><div class="brow-fill" style="--w:23%"></div></div></div>
-    <div class="brow"><div class="brow-top"><span class="brow-name">📱 Dev. da App</span><span class="brow-val">€700</span></div><div class="brow-track"><div class="brow-fill" style="--w:17%"></div></div></div>
-    <div class="brow"><div class="brow-top"><span class="brow-name">🏆 Kit Premiação</span><span class="brow-val">€500</span></div><div class="brow-track"><div class="brow-fill" style="--w:12%"></div></div></div>
-    <div class="brow"><div class="brow-top"><span class="brow-name">🚗 Deslocação</span><span class="brow-val">€250</span></div><div class="brow-track"><div class="brow-fill" style="--w:6%"></div></div></div>
-    <div class="brow"><div class="brow-top"><span class="brow-name">📣 Marketing</span><span class="brow-val">€200</span></div><div class="brow-track"><div class="brow-fill" style="--w:5%"></div></div></div>
+  <!-- ── SLIDE 2: OBJETIVOS ── -->
+  <div class="slide-wrap" id="s2">
+    <div class="eyebrow-slide">OBJETIVOS</div>
+    <div class="headline" style="font-size:clamp(36px,5vw,68px);top:110px;left:50px">4 TEMAS DE<br>SUSTENTABILIDADE</div>
+    <div class="theme-grid" style="top:235px;left:50px;width:490px">
+      <div class="theme-card"><div class="tc-num">01</div><div class="tc-title">Gestão de Resíduos</div><div class="tc-desc">Reciclagem, redução e reutilização.</div></div>
+      <div class="theme-card"><div class="tc-num">02</div><div class="tc-title">Carvão vs Gás</div><div class="tc-desc">Impacto ambiental do gás natural.</div></div>
+      <div class="theme-card"><div class="tc-num">03</div><div class="tc-title">Energias Renováveis</div><div class="tc-desc">Solar, eólica e fontes limpas.</div></div>
+      <div class="theme-card"><div class="tc-num">04</div><div class="tc-title">Consumo de Água</div><div class="tc-desc">Preservação dos recursos hídricos.</div></div>
+    </div>
   </div>
 
-  <!-- Nav -->
+  <!-- ── SLIDE 3: METODOLOGIA ── -->
+  <div class="slide-wrap" id="s3">
+    <div class="eyebrow-slide">METODOLOGIA</div>
+    <div class="headline" style="font-size:clamp(36px,5vw,66px);top:110px;left:50px">JORNADA EM<br>5 FASES</div>
+    <div class="phase-list" style="top:228px;left:50px;width:480px">
+      <div class="phase-row"><div class="phase-dot">01</div><div><div class="phase-name">Desenvolvimento da App</div><div class="phase-sub">App EduGalp interativa para quizzes</div></div></div>
+      <div class="phase-row"><div class="phase-dot">02</div><div><div class="phase-name">Preparação dos Conteúdos</div><div class="phase-sub">Materiais alinhados aos 4 temas</div></div></div>
+      <div class="phase-row"><div class="phase-dot">03</div><div><div class="phase-name">Sessões de Workshops</div><div class="phase-sub">Presencial nas 4 escolas</div></div></div>
+      <div class="phase-row"><div class="phase-dot">04</div><div><div class="phase-name">Quizzes via App</div><div class="phase-sub">Avaliação dos conhecimentos</div></div></div>
+      <div class="phase-row"><div class="phase-dot">05</div><div><div class="phase-name">Certificados Digitais</div><div class="phase-sub">Para todos os concluintes</div></div></div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 4: METAS ── -->
+  <div class="slide-wrap" id="s4">
+    <div class="eyebrow-slide">METAS</div>
+    <div class="headline" style="font-size:clamp(38px,5vw,68px);top:110px;left:50px">ALCANCE DO<br>PROGRAMA</div>
+    <div class="meta-grid" style="top:238px;left:50px;width:520px">
+      <div class="meta-card"><div class="count-num" style="font-size:80px" data-target="4">0</div><div class="count-label">Escolas Participantes</div></div>
+      <div class="meta-card"><div class="count-num" style="font-size:80px" data-target="472">0</div><div class="count-label">Estudantes Alcançados</div></div>
+      <div class="meta-card"><div class="count-num" style="font-size:80px" data-target="2">0</div><div class="count-label">Sessões por Escola</div></div>
+      <div class="meta-card"><div class="count-num" style="font-size:80px" data-target="109">0</div><div class="count-label">Alunos por Sessão</div></div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 5: RESULTADOS ── -->
+  <div class="slide-wrap" id="s5">
+    <div class="eyebrow-slide">RESULTADOS ESPERADOS</div>
+    <div class="headline" style="font-size:clamp(36px,4.5vw,64px);top:110px;left:50px">O IMPACTO QUE<br>QUEREMOS CRIAR</div>
+    <div class="result-list" style="top:232px;left:50px;width:490px">
+      <div class="result-card"><div class="rc-icon">🎓</div><div><div class="rc-title">Futuros Colaboradores</div><div class="rc-desc">Jovens com base em sustentabilidade, prontos para integrar a Galp com visão consciente.</div></div></div>
+      <div class="result-card"><div class="rc-icon">🌱</div><div><div class="rc-title">Comunidade Escolar</div><div class="rc-desc">Maior envolvimento das escolas, criando um efeito multiplicador sustentável.</div></div></div>
+      <div class="result-card"><div class="rc-icon">🔥</div><div><div class="rc-title">Crescimento de Mercado</div><div class="rc-desc">Posicionamento como líder em sustentabilidade juvenil em Moçambique.</div></div></div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 6: ORÇAMENTO ── -->
+  <div class="slide-wrap" id="s6">
+    <div class="eyebrow-slide">ORÇAMENTO ANUAL</div>
+    <div class="headline" style="font-size:clamp(36px,5vw,64px);top:110px;left:50px">INVESTIMENTO</div>
+    <div class="budget-wrap" style="top:195px;left:50px">
+      <div style="margin-bottom:20px"><div class="bt-eur">€ 4.200</div><div class="bt-mzn">336.000 MZN / ano</div></div>
+      <div class="bitem"><div class="bi-header"><span class="bi-name">☕ Coffee Break</span><span class="bi-val">€ 1.550</span></div><div class="bi-track"><div class="bi-fill" data-w="37"></div></div></div>
+      <div class="bitem"><div class="bi-header"><span class="bi-name">🖥️ Equipamento Técnico</span><span class="bi-val">€ 950</span></div><div class="bi-track"><div class="bi-fill" data-w="23"></div></div></div>
+      <div class="bitem"><div class="bi-header"><span class="bi-name">📱 Desenvolvimento App</span><span class="bi-val">€ 700</span></div><div class="bi-track"><div class="bi-fill" data-w="17"></div></div></div>
+      <div class="bitem"><div class="bi-header"><span class="bi-name">🏆 Kit de Premiação</span><span class="bi-val">€ 500</span></div><div class="bi-track"><div class="bi-fill" data-w="12"></div></div></div>
+      <div class="bitem"><div class="bi-header"><span class="bi-name">🚗 Deslocação</span><span class="bi-val">€ 250</span></div><div class="bi-track"><div class="bi-fill" data-w="6"></div></div></div>
+      <div class="bitem"><div class="bi-header"><span class="bi-name">📣 Comunicação / Marketing</span><span class="bi-val">€ 200</span></div><div class="bi-track"><div class="bi-fill" data-w="5"></div></div></div>
+    </div>
+  </div>
+
+  <!-- NAV -->
   <div id="nav">
-    <button class="nbtn" id="prevBtn" onclick="changeSlide(-1)" disabled>&#8592;</button>
+    <button class="nbtn" id="prevBtn" onclick="prev()" disabled>&#8592;</button>
     <div id="dotswrap"></div>
     <span id="nctr">1 / 7</span>
-    <button class="nbtn" id="nextBtn" onclick="changeSlide(1)">&#8594;</button>
+    <button class="nbtn" id="nextBtn" onclick="next()">&#8594;</button>
   </div>
-
-  <div id="kbhint">← → para navegar</div>
+  <div id="prog"><div id="prog-fill" style="width:14.28%"></div></div>
+  <div id="kbhint">← → navegar</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-// ────────── SCENE SETUP ──────────
-const W = window.innerWidth, H = window.innerHeight;
-const renderer = new THREE.WebGLRenderer({antialias:true,alpha:false});
+// ══════════════════════════════════════════════
+// SCENE
+// ══════════════════════════════════════════════
+const W=window.innerWidth, H=window.innerHeight;
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('cv'),antialias:true});
 renderer.setSize(W,H);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setClearColor(0x0F0A00,1);
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.setClearColor(0x0a0a12,1);
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.2;
-document.getElementById('canvas-container').appendChild(renderer.domElement);
+renderer.toneMappingExposure=1.1;
 
 const scene=new THREE.Scene();
-scene.fog=new THREE.FogExp2(0x0a0a12,0.035);
+scene.fog=new THREE.Fog(0x0F0A00,18,55);
 
-const camera=new THREE.PerspectiveCamera(50,W/H,0.1,200);
-camera.position.set(0,2.5,8);
-camera.lookAt(0,2,0);
+const camera=new THREE.PerspectiveCamera(55,W/H,0.1,200);
+camera.position.set(0,1,16);
 
-// ────────── LIGHTS ──────────
-const ambient=new THREE.AmbientLight(0x8080ff,0.4);
-scene.add(ambient);
+// ── LIGHTS ──────────────────────────────────
+const amb=new THREE.AmbientLight(0xFF8833,0.35);scene.add(amb);
+const sun=new THREE.DirectionalLight(0xFFCC88,2.2);
+sun.position.set(6,10,8);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-15;sun.shadow.camera.right=15;
+sun.shadow.camera.top=12;sun.shadow.camera.bottom=-12;
+sun.shadow.bias=-0.001;
+scene.add(sun);
+const rimOrange=new THREE.PointLight(0xFF5500,5,30);rimOrange.position.set(-7,3,-3);scene.add(rimOrange);
+const warmFill=new THREE.PointLight(0xFFAA44,2.5,25);warmFill.position.set(7,-2,5);scene.add(warmFill);
+const backGlow=new THREE.PointLight(0xFF6B00,3,20);backGlow.position.set(0,5,-8);scene.add(backGlow);
 
-const keyLight=new THREE.DirectionalLight(0xffffff,2.0);
-keyLight.position.set(3,8,5);
-keyLight.castShadow=true;
-keyLight.shadow.mapSize.width=2048;
-keyLight.shadow.mapSize.height=2048;
-keyLight.shadow.camera.near=0.1;
-keyLight.shadow.camera.far=50;
-keyLight.shadow.camera.left=-10;keyLight.shadow.camera.right=10;
-keyLight.shadow.camera.top=10;keyLight.shadow.camera.bottom=-10;
-keyLight.shadow.bias=-0.001;
-scene.add(keyLight);
+// ── FLOOR ───────────────────────────────────
+const floorMesh=new THREE.Mesh(
+  new THREE.PlaneGeometry(80,80),
+  new THREE.MeshStandardMaterial({color:0x120800,roughness:0.95,metalness:0.0})
+);
+floorMesh.rotation.x=-Math.PI/2;floorMesh.position.y=-8;floorMesh.receiveShadow=true;
+scene.add(floorMesh);
+// Warm orange grid
+const gridH=new THREE.GridHelper(80,60,0xFF6B00,0x2A1500);
+gridH.position.y=-8;gridH.material.opacity=0.18;gridH.material.transparent=true;
+scene.add(gridH);
 
-const rimLight=new THREE.DirectionalLight(0xFF6B00,1.5);
-rimLight.position.set(-4,4,-2);
-scene.add(rimLight);
-
-const fillLight=new THREE.DirectionalLight(0x4040ff,0.8);
-fillLight.position.set(-5,3,3);
-scene.add(fillLight);
-
-const groundLight=new THREE.PointLight(0xFF6B00,0.6,15);
-groundLight.position.set(0,-1,2);
-scene.add(groundLight);
-
-// ────────── FLOOR ──────────
-const floorGeo=new THREE.PlaneGeometry(40,40);
-const floorMat=new THREE.MeshStandardMaterial({
-  color:0x0d0d1a,roughness:0.8,metalness:0.3
-});
-const floor=new THREE.Mesh(floorGeo,floorMat);
-floor.rotation.x=-Math.PI/2;
-floor.position.y=-1.6;
-floor.receiveShadow=true;
-scene.add(floor);
-
-// Floor reflection grid
-const gridHelper=new THREE.GridHelper(40,40,0xFF6B00,0x1a1a2e);
-gridHelper.position.y=-1.59;
-gridHelper.material.opacity=0.25;
-gridHelper.material.transparent=true;
-scene.add(gridHelper);
-
-// ────────── ANIMATED 3D FIGURE ──────────
-const fig=new THREE.Group();
-scene.add(fig);
-
-const skinColor=0xD4956A;
-const suitColor=0xFF6B00;
-const darkColor=0x1a1a2e;
-const shirtColor=0xffffff;
-const pantsColor=0x1a1a2e;
-
-// Helper: capsule-like body part
-function makePart(rx,ry,rz,color,shiny){
-  const geo=new THREE.SphereGeometry(1,16,12);
-  geo.scale(rx,ry,rz);
-  const mat=new THREE.MeshStandardMaterial({
-    color,roughness:shiny?0.3:0.6,metalness:shiny?0.2:0.0,
-  });
-  const m=new THREE.Mesh(geo,mat);
-  m.castShadow=true;m.receiveShadow=true;
-  return m;
+// ── MATERIAL FACTORY ────────────────────────
+const O=0xFF6B00, O2=0xFF9500, O3=0xFFCC00;
+function mat(col,rough=0.2,metal=0.8,emit=0,emitI=0){
+  return new THREE.MeshStandardMaterial({color:col,roughness:rough,metalness:metal,emissive:emit||col,emissiveIntensity:emitI});
 }
-function makeBox(w,h,d,color,rough=0.6){
-  const geo=new THREE.BoxGeometry(w,h,d,1,1,1);
-  const mat=new THREE.MeshStandardMaterial({color,roughness:rough,metalness:0.1});
-  const m=new THREE.Mesh(geo,mat);
-  m.castShadow=true;m.receiveShadow=true;
-  return m;
-}
-function makeCylinder(rt,rb,h,segs,color,rough=0.6){
-  const geo=new THREE.CylinderGeometry(rt,rb,h,segs);
-  const mat=new THREE.MeshStandardMaterial({color,roughness:rough,metalness:0.1});
-  const m=new THREE.Mesh(geo,mat);
-  m.castShadow=true;return m;
-}
+const M={
+  orange:mat(O,0.15,0.85,O,0.12),
+  orange2:mat(O2,0.15,0.85,O2,0.12),
+  amber:mat(O3,0.2,0.8,O3,0.1),
+  darkOrange:mat(0x3D1500,0.9,0.1),
+  warmWhite:mat(0xFFEECC,0.3,0.6),
+  glow:new THREE.MeshStandardMaterial({color:O,emissive:O,emissiveIntensity:2,roughness:0.1}),
+  green:mat(0x44BB44,0.2,0.6,0x22AA22,0.15),
+  blue:mat(0x4499FF,0.2,0.7,0x2266DD,0.12),
+  gray:mat(0x888888,0.5,0.5),
+  trans:new THREE.MeshStandardMaterial({color:O,roughness:0.05,metalness:0.9,transparent:true,opacity:0.45}),
+};
 
-// HEAD
-const headG=new THREE.Group();
-const head=makePart(0.38,0.44,0.36,skinColor,true);
-headG.add(head);
+// ── HELPERS ─────────────────────────────────
+function mesh(geo,m){const o=new THREE.Mesh(geo,m);o.castShadow=true;o.receiveShadow=true;return o;}
+const B=(w,h,d,m)=>mesh(new THREE.BoxGeometry(w,h,d),m);
+const S=(r,m,s=20)=>mesh(new THREE.SphereGeometry(r,s,s),m);
+const C=(rt,rb,h,seg,m)=>mesh(new THREE.CylinderGeometry(rt,rb,h,seg),m);
+const T=(r,t,s,ts,m)=>mesh(new THREE.TorusGeometry(r,t,s,ts),m);
+const rnd=(a,b)=>a+(b-a)*Math.random();
 
-// Face features
-const noseG=makePart(0.055,0.07,0.07,skinColor,true);
-noseG.position.set(0,-0.04,0.32);headG.add(noseG);
-
-// Eyes
-[-0.12,0.12].forEach(x=>{
-  const eyeW=makePart(0.065,0.065,0.04,0xffffff,true);
-  eyeW.position.set(x,0.07,0.33);headG.add(eyeW);
-  const iris=makePart(0.04,0.04,0.04,0x1a1a2e,true);
-  iris.position.set(x,0.07,0.35);headG.add(iris);
-  const pupil=makePart(0.02,0.02,0.02,0x050508,true);
-  pupil.position.set(x,0.07,0.37);headG.add(pupil);
-  const brow=makeBox(0.13,0.025,0.04,0x1a1a2e);
-  brow.position.set(x,0.17,0.33);headG.add(brow);
-});
-
-// Mouth — smile
-const mouthGeo=new THREE.TorusGeometry(0.09,0.018,8,16,Math.PI);
-const mouthMat=new THREE.MeshStandardMaterial({color:0x6b2020,roughness:0.7});
-const mouth=new THREE.Mesh(mouthGeo,mouthMat);
-mouth.rotation.z=Math.PI;mouth.position.set(0,-0.1,0.33);headG.add(mouth);
-const teeth=makePart(0.065,0.025,0.035,0xffffff,true);
-teeth.position.set(0,-0.1,0.355);headG.add(teeth);
-
-// Ears
-[-0.38,0.38].forEach(x=>{
-  const ear=makePart(0.07,0.1,0.06,skinColor,true);
-  ear.position.set(x,0,0);headG.add(ear);
-});
-
-// Hair
-const hairCap=makePart(0.42,0.25,0.39,0x1a1a2e,false);
-hairCap.position.set(0,0.22,0);headG.add(hairCap);
-const hairFront=makePart(0.3,0.1,0.15,0x1a1a2e,false);
-hairFront.position.set(0,0.35,0.2);headG.add(hairFront);
-
-headG.position.set(0,3.1,0);
-fig.add(headG);
-
-// NECK
-const neck=makeCylinder(0.13,0.16,0.3,12,skinColor);
-neck.position.set(0,2.7,0);fig.add(neck);
-
-// TORSO — suit jacket
-const torso=makeBox(0.85,1.1,0.45,suitColor,0.55);
-torso.position.set(0,1.85,0);fig.add(torso);
-
-// Suit lapels
-const lapelL=makePart(0.15,0.28,0.06,0xfF8C00,0.4);
-lapelL.position.set(-0.15,2.1,0.24);fig.add(lapelL);
-const lapelR=makePart(0.15,0.28,0.06,0xFF8C00,0.4);
-lapelR.position.set(0.15,2.1,0.24);fig.add(lapelR);
-
-// White shirt strip
-const shirt=makeBox(0.22,0.8,0.06,shirtColor);
-shirt.position.set(0,1.9,0.25);fig.add(shirt);
-
-// Tie
-const tieTop=makeBox(0.1,0.6,0.04,0x1a1a2e);
-tieTop.position.set(0,1.9,0.29);fig.add(tieTop);
-
-// Shoulders
-[-0.5,0.5].forEach(x=>{
-  const sh=makePart(0.25,0.2,0.22,suitColor,0.5);
-  sh.position.set(x,2.25,0);fig.add(sh);
-});
-
-// ARMS
-const armLG=new THREE.Group();
-const upperArmL=makeCylinder(0.11,0.1,0.6,12,suitColor);
-upperArmL.position.y=-0.3;
-armLG.add(upperArmL);
-const lowerArmL=makeCylinder(0.1,0.085,0.55,12,skinColor);
-lowerArmL.position.y=-0.9;
-armLG.add(lowerArmL);
-const handL=makePart(0.1,0.13,0.09,skinColor,true);
-handL.position.y=-1.22;armLG.add(handL);
-const thumbL=makePart(0.045,0.07,0.045,skinColor,true);
-thumbL.position.set(-0.1,-1.2,0.06);armLG.add(thumbL);
-armLG.position.set(-0.6,2.2,0);
-const armL=new THREE.Group();
-armL.add(armLG);
-fig.add(armL);
-armL.rotation.z=0.15;
-
-const armRG=new THREE.Group();
-const upperArmR=makeCylinder(0.11,0.1,0.6,12,suitColor);
-upperArmR.position.y=-0.3;armRG.add(upperArmR);
-const lowerArmR=makeCylinder(0.1,0.085,0.55,12,skinColor);
-lowerArmR.position.y=-0.9;armRG.add(lowerArmR);
-const handR=makePart(0.1,0.13,0.09,skinColor,true);
-handR.position.y=-1.22;armRG.add(handR);
-armRG.position.set(0.6,2.2,0);
-const armR=new THREE.Group();
-armR.add(armRG);
-fig.add(armR);
-armR.rotation.z=-0.15;
-
-// HIPS
-const hips=makeBox(0.82,0.28,0.42,pantsColor);
-hips.position.set(0,1.2,0);fig.add(hips);
-
-// BELT
-const belt=makeBox(0.84,0.1,0.47,0x0d0d14);
-belt.position.set(0,1.32,0);fig.add(belt);
-const buckle=makeBox(0.1,0.1,0.06,0xFFAA00,0.2);
-buckle.position.set(0,1.32,0.26);fig.add(buckle);
-
-// LEGS
-const legLG=new THREE.Group();
-const thighL=makeCylinder(0.18,0.16,0.65,12,pantsColor);
-thighL.position.y=-0.32;legLG.add(thighL);
-const calfL=makeCylinder(0.14,0.11,0.6,12,pantsColor);
-calfL.position.y=-0.97;legLG.add(calfL);
-const shoeL=makePart(0.14,0.1,0.22,0x0d0d14,true);
-shoeL.position.set(0,-1.3,0.08);legLG.add(shoeL);
-legLG.position.set(-0.22,1.02,0);
-const legL=new THREE.Group();legL.add(legLG);fig.add(legL);
-
-const legRG=new THREE.Group();
-const thighR=makeCylinder(0.18,0.16,0.65,12,pantsColor);
-thighR.position.y=-0.32;legRG.add(thighR);
-const calfR=makeCylinder(0.14,0.11,0.6,12,pantsColor);
-calfR.position.y=-0.97;legRG.add(calfR);
-const shoeR=makePart(0.14,0.1,0.22,0x0d0d14,true);
-shoeR.position.set(0,-1.3,0.08);legRG.add(shoeR);
-legRG.position.set(0.22,1.02,0);
-const legR=new THREE.Group();legR.add(legRG);fig.add(legR);
-
-// Pointer in right hand (pointing stick)
-const pointerStick=makeCylinder(0.015,0.015,1.1,6,0xFFD700,0.2);
-pointerStick.rotation.z=Math.PI/2;
-pointerStick.position.set(-0.5,-1.1,0.15);
-armRG.add(pointerStick);
-
-fig.position.set(1.5,-0.2,0);
-fig.rotation.y=-0.4;
-
-// ────────── STAGE PLATFORM ──────────
-const stageGeo=new THREE.CylinderGeometry(2.5,2.8,0.25,32);
-const stageMat=new THREE.MeshStandardMaterial({color:0x1a1a2e,roughness:0.4,metalness:0.5});
-const stage=new THREE.Mesh(stageGeo,stageMat);
-stage.position.set(1.5,-1.72,0);
-stage.castShadow=true;stage.receiveShadow=true;
-scene.add(stage);
-
-// Stage ring glow
-const ringGeo=new THREE.TorusGeometry(2.5,0.06,8,64);
-const ringMat=new THREE.MeshStandardMaterial({color:0xFF6B00,emissive:0xFF6B00,emissiveIntensity:1.5,roughness:0.1});
-const ring=new THREE.Mesh(ringGeo,ringMat);
-ring.rotation.x=Math.PI/2;
-ring.position.set(1.5,-1.6,0);
-scene.add(ring);
-
-// ────────── HOLOGRAPHIC SCREEN ──────────
-const screenG=new THREE.Group();
-const screenBG=makeBox(4.5,2.8,0.06,0x050510,0.9);
-screenBG.position.set(-1,2.4,-3.5);
-scene.add(screenBG);
-
-const screenGlow=makeBox(4.6,2.9,0.04,0xFF6B00,0.1);
-screenGlow.position.set(-1,2.4,-3.55);
-const glowMat=new THREE.MeshStandardMaterial({color:0xFF6B00,emissive:0xFF3300,emissiveIntensity:0.4,roughness:0.9});
-screenGlow.material=glowMat;
-scene.add(screenGlow);
-
-// Screen frame
-const frameGeo=new THREE.EdgesGeometry(new THREE.BoxGeometry(4.6,2.9,0.07));
-const frameMat=new THREE.LineBasicMaterial({color:0xFF6B00,linewidth:2});
-const frame=new THREE.LineSegments(frameGeo,frameMat);
-frame.position.set(-1,2.4,-3.5);
-scene.add(frame);
-
-// ────────── FLOATING PARTICLES ──────────
-const particleCount=180;
-const pGeo=new THREE.BufferGeometry();
-const pPos=new Float32Array(particleCount*3);
-const pSpeeds=[];
-for(let i=0;i<particleCount;i++){
-  pPos[i*3]=( Math.random()-0.5)*30;
-  pPos[i*3+1]=Math.random()*20-2;
-  pPos[i*3+2]=( Math.random()-0.5)*20-5;
-  pSpeeds.push({vx:(Math.random()-0.5)*0.01,vy:Math.random()*0.02+0.005,vz:(Math.random()-0.5)*0.01});
-}
-pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
-const pMat=new THREE.PointsMaterial({color:0xFF6B00,size:0.06,transparent:true,opacity:0.5});
-const particles=new THREE.Points(pGeo,pMat);
-scene.add(particles);
-
-// ────────── SLIDES DATA ──────────
-const slides=[
-  {eyebrow:'GALP · MOZAMBIQUE · 2025',title:'EduGalp',body:'Formação para o Futuro — educação para a sustentabilidade nas escolas de Moçambique.'},
-  {eyebrow:'CONTEXTUALIZAÇÃO',title:'O Futuro Começa Hoje',body:'O EduGalp aproxima a Galp das escolas, criando consciência ambiental de forma prática e interativa.'},
-  {eyebrow:'OBJETIVOS',title:'4 Temas de Sustentabilidade',body:'Cada tema é trabalhado de forma interativa nas escolas participantes.'},
-  {eyebrow:'METODOLOGIA',title:'Jornada em 5 Fases',body:'Da criação da app à emissão dos certificados digitais para cada estudante.'},
-  {eyebrow:'METAS',title:'Alcance do Programa',body:'Números concretos de impacto — escolas, estudantes e sessões por ciclo.'},
-  {eyebrow:'RESULTADOS ESPERADOS',title:'O Impacto que Queremos Criar',body:'Futuros colaboradores, comunidades conscientes e crescimento de mercado para a Galp.'},
-  {eyebrow:'ORÇAMENTO ANUAL',title:'Investimento de € 4.200',body:'Custo por escola de apenas €1.050, incluindo app, equipamento, premiação e formação.'},
-];
-
-const showGroups=[
-  [],
-  ['sf1','sf2','sf3'],
-  ['tf1','tf2','tf3','tf4'],
-  ['ps1','ps2','ps3','ps4','ps5'],
-  ['mb1','mb2','mb3','mb4'],
-  ['rc1','rc2','rc3'],
-  ['budget-panel'],
-];
-
-let current=0,isAnim=false;
-const total=slides.length;
-
-// ────────── CAMERA POSITIONS PER SLIDE ──────────
-const camTargets=[
-  {px:0,py:2.5,pz:8,lx:0,ly:2,lz:0},
-  {px:-1.5,py:2.2,pz:7,lx:0.5,ly:2,lz:0},
-  {px:0,py:2.8,pz:7.5,lx:0,ly:2.2,lz:0},
-  {px:0.5,py:2,pz:7,lx:0,ly:1.8,lz:0},
-  {px:-0.5,py:2.5,pz:7.5,lx:0.5,ly:2,lz:0},
-  {px:-0.5,py:2.5,pz:7.5,lx:0,ly:2,lz:0},
-  {px:0.5,py:2.5,pz:7.5,lx:0,ly:2,lz:0},
-];
-
-// ────────── HUD DOTS ──────────
-const dotswrap=document.getElementById('dotswrap');
-for(let i=0;i<total;i++){
-  const d=document.createElement('div');
-  d.className='ndot'+(i===0?' on':'');
-  d.onclick=()=>goTo(i);
-  dotswrap.appendChild(d);
-}
-
-function updateUI(){
-  const s=slides[current];
-  const sp=document.getElementById('speech');
-  sp.classList.remove('show');
-  setTimeout(()=>{
-    document.getElementById('speech-eyebrow').textContent=s.eyebrow;
-    document.getElementById('speech-title').textContent=s.title;
-    document.getElementById('speech-body').textContent=s.body;
-    sp.classList.add('show');
-  },300);
-
-  // Hide all dynamic elements
-  ['sf1','sf2','sf3','tf1','tf2','tf3','tf4','ps1','ps2','ps3','ps4','ps5',
-   'mb1','mb2','mb3','mb4','rc1','rc2','rc3','budget-panel'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.classList.remove('show');
-  });
-
-  // Show for current slide with stagger
-  const toShow=showGroups[current];
-  toShow.forEach((id,i)=>{
-    setTimeout(()=>{
-      const el=document.getElementById(id);
-      if(el)el.classList.add('show');
-    },400+i*120);
-  });
-
-  // Budget bar animation
-  if(current===6){
-    setTimeout(()=>{
-      document.querySelectorAll('.brow-fill').forEach(b=>{
-        b.style.width=b.style.getPropertyValue('--w')||b.getAttribute('style').match(/--w:([\d%]+)/)?.[1]||'0%';
-      });
-    },600);
+// ── PARTICLES ───────────────────────────────
+function mkPts(n,spread,col,sz){
+  const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array(n*3);
+  const vel=[];
+  for(let i=0;i<n;i++){
+    pos[i*3]=rnd(-spread,spread);pos[i*3+1]=rnd(-spread*.5,spread*.8);pos[i*3+2]=rnd(-spread*.4,spread*.2);
+    vel.push({x:rnd(-.008,.008),y:rnd(.003,.01),z:rnd(-.005,.005)});
   }
-
-  document.getElementById('nctr').textContent=(current+1)+' / '+total;
-  document.getElementById('prev'+'Btn').disabled=current===0;
-  document.getElementById('nextBtn').disabled=current===total-1;
-  document.getElementById('prog-fill').style.width=((current+1)/total*100)+'%';
-  document.querySelectorAll('.ndot').forEach((d,i)=>d.classList.toggle('on',i===current));
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const pts=new THREE.Points(geo,new THREE.PointsMaterial({color:col,size:sz,transparent:true,opacity:0.55,depthWrite:false}));
+  pts.userData={vel,n};return pts;
 }
 
-// ────────── SLIDE TRANSITION ──────────
-let camTarget=camTargets[0];
-let camVel={px:0,py:0,pz:0};
+// Global warm embers
+const embers=mkPts(220,20,0xFF6B00,0.055);scene.add(embers);
+const embers2=mkPts(140,18,0xFFAA44,0.04);scene.add(embers2);
 
+// ══════════════════════════════════════════════
+// SUSTAINABILITY 3D ICONS  (built from primitives)
+// ══════════════════════════════════════════════
+
+// LEAF icon
+function makeLeaf(col){
+  const g=new THREE.Group();
+  const body=mesh(new THREE.SphereGeometry(0.7,16,12),mat(col,0.2,0.5,col,0.1));
+  body.scale.set(1,1.6,0.35);g.add(body);
+  const stem=C(0.04,0.04,0.5,8,mat(0x885522,0.8,0.1));stem.position.y=-0.85;g.add(stem);
+  // vein
+  const vein=C(0.02,0.02,1.1,6,mat(col*0.7||0x33AA33,0.5,0.1));vein.position.y=0;g.add(vein);
+  return g;
+}
+
+// SOLAR PANEL icon
+function makeSolar(){
+  const g=new THREE.Group();
+  const frame=B(1.8,1.2,0.08,mat(0x555566,0.4,0.7));g.add(frame);
+  // cells grid
+  for(let r=0;r<2;r++)for(let c=0;c<3;c++){
+    const cell=B(0.48,0.44,0.06,mat(0x1133AA,0.2,0.7,0x2244CC,0.12));
+    cell.position.set(-0.6+c*0.6,-0.24+r*0.52,0.07);g.add(cell);
+    // shine line
+    const shine=B(0.35,0.02,0.02,mat(0xAABBFF,0.1,0.9,0xAABBFF,0.3));
+    shine.position.copy(cell.position);shine.position.z+=0.08;g.add(shine);
+  }
+  const pole=C(0.05,0.05,0.9,8,M.gray);pole.position.set(0,-1.0,0);g.add(pole);
+  const base=C(0.3,0.35,0.12,16,M.gray);base.position.set(0,-1.5,0);g.add(base);
+  return g;
+}
+
+// RECYCLE icon
+function makeRecycle(){
+  const g=new THREE.Group();
+  // 3 arrows making a triangle
+  for(let i=0;i<3;i++){
+    const arrow=new THREE.Group();
+    const body=B(0.14,0.7,0.14,M.orange);body.position.y=0.35;arrow.add(body);
+    const head=mesh(new THREE.ConeGeometry(0.2,0.35,8),M.orange2);head.position.y=0.85;arrow.add(head);
+    arrow.rotation.z=(i*Math.PI*2/3);
+    arrow.position.set(Math.sin(i*Math.PI*2/3)*0.65,-Math.cos(i*Math.PI*2/3)*0.65,0);
+    g.add(arrow);
+  }
+  return g;
+}
+
+// WATER DROP icon
+function makeWaterDrop(col){
+  const g=new THREE.Group();
+  const dropM=mat(col||0x4499FF,0.05,0.8,col||0x4499FF,0.2);
+  dropM.transparent=true;dropM.opacity=0.85;
+  // teardrop: sphere + cone
+  const sphere_=S(0.55,dropM,20);sphere_.position.y=-0.1;g.add(sphere_);
+  const tip=mesh(new THREE.ConeGeometry(0.38,0.8,20),dropM);
+  tip.rotation.z=Math.PI;tip.position.y=0.55;g.add(tip);
+  return g;
+}
+
+// WIND TURBINE icon
+function makeTurbine(){
+  const g=new THREE.Group();
+  const tower=C(0.08,0.12,2.2,12,M.warmWhite);tower.position.y=-0.8;g.add(tower);
+  const hub=S(0.16,mat(0xDDDDDD,0.3,0.7),12);hub.position.y=0.3;g.add(hub);
+  // 3 blades
+  for(let i=0;i<3;i++){
+    const blade=new THREE.Group();
+    const b=mesh(new THREE.BoxGeometry(0.1,0.85,0.06),mat(0xFFEEDD,0.3,0.5));
+    b.position.y=0.45;blade.add(b);
+    blade.rotation.z=i*(Math.PI*2/3);
+    blade.position.set(0,0.3,0);
+    g.add(blade);
+    blade.userData={ry:0,rz_spin:i*(Math.PI*2/3)};
+  }
+  g.userData.turbineBlades=true;
+  const base=C(0.25,0.3,0.15,16,M.gray);base.position.y=-1.95;g.add(base);
+  return g;
+}
+
+// FLAME / FIRE icon (gas)
+function makeFlame(){
+  const g=new THREE.Group();
+  const colors=[0xFF2200,0xFF6B00,0xFFAA00,0xFFEE44];
+  for(let i=0;i<4;i++){
+    const f=mesh(new THREE.ConeGeometry(0.35-i*0.06,0.9+i*0.15,12),mat(colors[i],0.4,0.1,colors[i],0.5+i*0.15));
+    f.position.y=i*0.25;f.userData={float:i*0.8,floatSpeed:1.5+i*0.3};g.add(f);
+  }
+  const base=C(0.3,0.35,0.2,16,mat(0x333344,0.8,0.3));base.position.y=-0.55;g.add(base);
+  return g;
+}
+
+// CERTIFICATE scroll icon
+function makeCertificate(){
+  const g=new THREE.Group();
+  const paper=B(1.2,0.9,0.04,mat(0xFFEECC,0.6,0.1));g.add(paper);
+  for(let i=0;i<3;i++){const line=B(0.7,0.04,0.05,mat(0xCC8833,0.8,0.1));line.position.set(0,-0.2+i*0.2,0.05);g.add(line);}
+  const stamp=S(0.2,mat(0xFF3300,0.2,0.3,0xFF2200,0.3),12);stamp.position.set(0.35,-0.2,0.08);g.add(stamp);
+  const rollL=C(0.08,0.08,0.95,12,mat(0xAA7744,0.5,0.3));rollL.rotation.z=Math.PI/2;rollL.position.set(-0.65,0,0);g.add(rollL);
+  const rollR=C(0.08,0.08,0.95,12,mat(0xAA7744,0.5,0.3));rollR.rotation.z=Math.PI/2;rollR.position.set(0.65,0,0);g.add(rollR);
+  return g;
+}
+
+// SCHOOL building icon
+function makeSchool(){
+  const g=new THREE.Group();
+  const body=B(1.4,1.0,0.6,mat(0xFFDDAA,0.7,0.1));g.add(body);
+  const roof=mesh(new THREE.ConeGeometry(1.05,0.5,4),mat(0xFF5500,0.4,0.3));roof.position.y=0.75;roof.rotation.y=Math.PI/4;g.add(roof);
+  const door=B(0.22,0.4,0.07,mat(0x884422,0.8,0.1));door.position.set(0,-0.3,0.34);g.add(door);
+  for(let i of[-0.4,0.4]){const w=B(0.22,0.22,0.07,mat(0x88CCFF,0.1,0.8));w.position.set(i,0.1,0.34);g.add(w);}
+  return g;
+}
+
+// GALP G letter icon (3D)
+function makeGalpG(){
+  const g=new THREE.Group();
+  const ring=T(0.7,0.18,16,60,M.orange);g.add(ring);
+  // cut the ring to make "G" shape — overlay a blocker
+  const cut=B(0.9,0.38,0.5,mat(0x0F0A00,1,0));cut.position.set(0.45,0,0);g.add(cut);
+  // horizontal bar of G
+  const bar=B(0.38,0.16,0.38,M.orange2);bar.position.set(0.35,-0.05,0);g.add(bar);
+  return g;
+}
+
+// ══════════════════════════════════════════════
+// BUILD SLIDE SCENES
+// ══════════════════════════════════════════════
+const slides=[];
+for(let i=0;i<7;i++){const g=new THREE.Group();scene.add(g);g.visible=(i===0);slides.push(g);}
+
+// Reusable emitter: glowing ring + small orbiting dot
+function addOrbitDeco(parent,cx,cy,cz,radius,col){
+  const ringM=new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:0.7,transparent:true,opacity:0.35});
+  const r=T(radius,0.025,8,50,ringM);r.position.set(cx,cy,cz);r.rotation.x=Math.PI/2;parent.add(r);r.userData={ry:0.012};
+  const dot=S(0.07,new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:2}),8);
+  dot.userData={orbitCX:cx,orbitCY:cy,orbitR:radius,orbitA:0,orbitSpd:0.6};parent.add(dot);
+}
+
+// ─── SLIDE 0: Cover ── Galp G + sustainability ring ────
+(()=>{
+  const g=slides[0];
+  // Big Galp G 3D
+  const galpG=makeGalpG();galpG.scale.setScalar(3.5);galpG.position.set(7,0.5,-2);
+  g.add(galpG);galpG.userData={ry:0.006};
+  // Outer glow ring
+  const outerR=T(3.8,0.04,16,100,M.glow);outerR.position.set(7,0.5,-2);outerR.rotation.x=0.3;
+  g.add(outerR);outerR.userData={ry:0.005,rx:0.002};
+  const outerR2=T(4.5,0.025,16,100,new THREE.MeshStandardMaterial({color:O2,emissive:O2,emissiveIntensity:0.5,transparent:true,opacity:0.25}));
+  outerR2.position.set(7,0.5,-2);outerR2.rotation.x=-0.5;
+  g.add(outerR2);outerR2.userData={ry:-0.004};
+
+  // Floating sustainability icons around the G
+  const icons=[makeLeaf(0x44CC44),makeWaterDrop(),makeSolar(),makeRecycle()];
+  const angles=[0.5,2.0,3.8,5.2];
+  icons.forEach((ic,i)=>{
+    ic.scale.setScalar(0.55);
+    ic.position.set(7+Math.cos(angles[i])*4.5, 0.5+Math.sin(angles[i])*3, -1);
+    g.add(ic);
+    ic.userData={ry:0.008,float:i*1.4,floatSpeed:0.55,orbitCX:7,orbitCY:0.5,orbitR:4.5,orbitA:angles[i],orbitSpd:0.18};
+  });
+
+  // Sparks
+  const sp=mkPts(120,7,0xFF6B00,0.07);sp.position.set(7,0.5,0);g.add(sp);
+})();
+
+// ─── SLIDE 1: Context ── 3 floating spheres with stat auras ────
+(()=>{
+  const g=slides[1];
+  const items=[{val:4,col:O,pos:[4.5,2,0]},{val:480,col:O2,pos:[7.5,0,0]},{val:5,col:O3,pos:[10,-1.5,0]}];
+  items.forEach((d,i)=>{
+    const s=S(1.1-i*0.1,mat(d.col,0.1,0.88,d.col,0.18));
+    s.position.set(...d.pos);g.add(s);s.userData={ry:0.008+i*0.003,float:i*1.8,floatSpeed:0.5};
+    addOrbitDeco(g,...d.pos,1.7+i*0.2,d.col);
+    // thin meridian lines
+    const m2=T(1.12-i*0.1,0.018,8,40,new THREE.MeshStandardMaterial({color:d.col,transparent:true,opacity:0.2}));
+    m2.position.set(...d.pos);m2.rotation.x=Math.PI/3;g.add(m2);m2.userData={ry:0.015};
+  });
+  // Background leaf + water
+  const leaf=makeLeaf(0x44AA44);leaf.scale.setScalar(1.0);leaf.position.set(13,2,-3);
+  g.add(leaf);leaf.userData={ry:0.006,float:0,floatSpeed:0.4};
+  const drop=makeWaterDrop(0x4499FF);drop.scale.setScalar(0.9);drop.position.set(2,3,-2);
+  g.add(drop);drop.userData={ry:0.007,float:2,floatSpeed:0.5};
+  const sp=mkPts(80,10,O,0.06);g.add(sp);
+})();
+
+// ─── SLIDE 2: Themes ── 4 icons, each for a theme ────
+(()=>{
+  const g=slides[2];
+  // Recycle, Flame/gas, Solar, WaterDrop
+  const icons=[makeRecycle(),makeFlame(),makeSolar(),makeWaterDrop(0x4499FF)];
+  const positions=[[6,2.5,1],[9.5,2.5,0],[6,-1.5,1],[9.5,-1.5,0]];
+  const cols=[O,0xFF3300,0x2266FF,0x4499FF];
+  icons.forEach((ic,i)=>{
+    ic.scale.setScalar(0.9);ic.position.set(...positions[i]);
+    g.add(ic);ic.userData={ry:0.007,float:i*1.6,floatSpeed:0.5};
+    addOrbitDeco(g,...positions[i],1.5,cols[i]||O);
+  });
+  // connecting ring between all 4
+  const bigR=T(4.2,0.03,12,80,new THREE.MeshStandardMaterial({color:O,transparent:true,opacity:0.15}));
+  bigR.position.set(7.7,0.5,0);bigR.rotation.x=Math.PI/2;g.add(bigR);bigR.userData={ry:0.004};
+  const sp=mkPts(100,9,O,0.06);sp.position.set(7,0,0);g.add(sp);
+})();
+
+// ─── SLIDE 3: Methodology ── turbine + phases orbit ────
+(()=>{
+  const g=slides[3];
+  // Wind turbine center
+  const turbine=makeTurbine();turbine.scale.setScalar(1.4);turbine.position.set(8,0.5,0);
+  g.add(turbine);turbine.userData={ry:0.004,isTurbine:true};
+
+  // 5 small sustainability icons orbiting
+  const orbitIcons=[makeLeaf(0x44CC44),makeWaterDrop(0x4499FF),makeRecycle(),makeFlame(),makeCertificate()];
+  orbitIcons.forEach((ic,i)=>{
+    ic.scale.setScalar(0.5);
+    const angle=i*(Math.PI*2/5);
+    ic.position.set(8+Math.cos(angle)*4,0.5+Math.sin(angle)*3.5,0);
+    ic.userData={ry:0.01,orbitCX:8,orbitCY:0.5,orbitR3D:true,orbitAngle:angle,orbitSpd:0.22,orbitRx:4,orbitRy:3.5};
+    g.add(ic);
+  });
+  const ring=T(4.2,0.025,8,80,new THREE.MeshStandardMaterial({color:O,transparent:true,opacity:0.2}));
+  ring.position.set(8,0.5,0);ring.rotation.x=Math.PI/2;g.add(ring);ring.userData={ry:0.006};
+  const sp=mkPts(90,10,O2,0.055);sp.position.set(8,0,0);g.add(sp);
+})();
+
+// ─── SLIDE 4: Metas ── 4 exploding count objects ────
+(()=>{
+  const g=slides[4];
+  const positions=[[5,2.2,0],[9,2.2,0],[5,-1.8,0],[9,-1.8,0]];
+  const cols=[O,O2,O3,0xFF4400];
+  const icons=[makeSchool(),makeLeaf(0x44BB44),makeSolar(),makeCertificate()];
+  positions.forEach((p,i)=>{
+    const ic=icons[i];ic.scale.setScalar(0.75);ic.position.set(...p);
+    g.add(ic);ic.userData={ry:0.009,float:i*1.2,floatSpeed:0.55};
+    // glowing platform beneath
+    const plat=C(0.9,1.0,0.1,24,new THREE.MeshStandardMaterial({color:cols[i],emissive:cols[i],emissiveIntensity:0.5,transparent:true,opacity:0.3}));
+    plat.position.set(p[0],p[1]-1.1,p[2]);g.add(plat);
+    addOrbitDeco(g,...p,1.4,cols[i]);
+  });
+  const sp=mkPts(160,12,O,0.07);g.add(sp);
+  const sp2=mkPts(100,12,O2,0.05);g.add(sp2);
+})();
+
+// ─── SLIDE 5: Results ── trophy + leaf + flame ────
+(()=>{
+  const g=slides[5];
+  // Trophy (Galp orange)
+  const trophyG=new THREE.Group();
+  const cup=C(1.0,0.55,1.8,32,mat(O,0.05,0.95,O,0.2));trophyG.add(cup);
+  const stem_=C(0.18,0.18,0.55,16,mat(O2,0.05,0.95));stem_.position.y=-1.17;trophyG.add(stem_);
+  const base_=C(0.75,0.85,0.22,32,mat(O,0.1,0.9));base_.position.y=-1.57;trophyG.add(base_);
+  // handles
+  for(let s of[-1,1]){
+    const h=T(0.3,0.07,8,20,mat(O2,0.1,0.9));h.rotation.z=Math.PI/2;h.position.set(s*1.15,0.2,0);trophyG.add(h);
+  }
+  trophyG.position.set(8,0.5,0);trophyG.scale.setScalar(1.4);g.add(trophyG);
+  trophyG.userData={ry:0.007,float:0,floatSpeed:0.45};
+
+  const glow_ring=T(2.5,0.04,12,60,M.glow);glow_ring.position.set(8,0.5,0);glow_ring.rotation.x=Math.PI/2;g.add(glow_ring);glow_ring.userData={ry:0.01};
+  // leaf + water flanking
+  const leaf=makeLeaf(0x44CC44);leaf.scale.setScalar(1.1);leaf.position.set(5,0,1);g.add(leaf);leaf.userData={ry:0.006,float:1,floatSpeed:0.5};
+  const drop=makeWaterDrop(0x4499FF);drop.scale.setScalar(1.0);drop.position.set(11,0.5,-1);g.add(drop);drop.userData={ry:0.007,float:2.5,floatSpeed:0.4};
+  // star burst
+  for(let i=0;i<16;i++){
+    const ang=i*Math.PI/8;
+    const p=[new THREE.Vector3(0,0,0),new THREE.Vector3(Math.cos(ang)*5.5,Math.sin(ang)*5.5,0)];
+    const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(p),new THREE.LineBasicMaterial({color:O,transparent:true,opacity:0.07}));
+    line.position.set(8,0.5,0);g.add(line);line.userData={ry:0.003};
+  }
+  const sp=mkPts(150,9,O3,0.07);sp.position.set(8,0,0);g.add(sp);
+})();
+
+// ─── SLIDE 6: Budget ── pie 3D + euro coin ────
+(()=>{
+  const g=slides[6];
+  const pcts=[37,23,17,12,6,5];
+  const cols=[O,O2,O3,0xFF4400,0xFF8800,0xFFBB00];
+  let ang=0;
+  pcts.forEach((pct,i)=>{
+    const sweep=pct/100*Math.PI*2;
+    const wedgeMat=mat(cols[i],0.15,0.75,cols[i],0.15);
+    const wedge=mesh(new THREE.CylinderGeometry(2.4,2.4,0.55,40,1,false,ang,sweep),wedgeMat);
+    wedge.position.set(8,0,-2);g.add(wedge);
+    // slight gap between wedges
+    const midAng=ang+sweep/2;
+    wedge.position.x=8+Math.cos(midAng)*0.06;
+    wedge.position.z=-2+Math.sin(midAng)*0.06;
+    wedge.userData={ry:0.004};
+    // outer dot
+    const dot=S(0.12,new THREE.MeshStandardMaterial({color:cols[i],emissive:cols[i],emissiveIntensity:1.5}),10);
+    dot.position.set(8+Math.cos(ang+sweep/2)*3.0,0,(-2)+Math.sin(ang+sweep/2)*3.0);
+    g.add(dot);dot.userData={float:i,floatSpeed:0.6};
+    ang+=sweep;
+  });
+  // Euro coin on top
+  const coin=C(1.0,1.0,0.2,32,mat(O3,0.05,0.95,O3,0.2));coin.position.set(8,0.5,-2);coin.rotation.x=Math.PI/2;
+  g.add(coin);coin.userData={ry:0.015};
+  const coinEdge=T(1.02,0.03,8,40,M.glow);coinEdge.position.set(8,0.5,-2);coinEdge.rotation.x=Math.PI/2;
+  g.add(coinEdge);coinEdge.userData={ry:0.015};
+  // inner pie ring
+  const pieR=T(2.42,0.04,8,80,M.glow);pieR.position.set(8,0,-2);g.add(pieR);pieR.userData={ry:0.005};
+  const sp=mkPts(100,8,O,0.06);sp.position.set(8,0,-2);g.add(sp);
+})();
+
+// ══════════════════════════════════════════════
+// SLIDE NAV
+// ══════════════════════════════════════════════
+let cur=0, TOTAL=7, busy=false;
+const dw=document.getElementById('dotswrap');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('div');d.className='ndot'+(i===0?' on':'');
+  d.onclick=()=>goTo(i);dw.appendChild(d);
+}
+
+let camT={x:0,y:1,z:16};
+const camPositions=[
+  {x:0,y:1,z:16},{x:-1,y:1,z:14},{x:-1,y:1,z:14},
+  {x:-1,y:0.5,z:14},{x:-1,y:1,z:15},{x:-1,y:1,z:14},{x:-1,y:0.5,z:14}
+];
+
+let countTimers=[];
+function stopCounters(){countTimers.forEach(clearInterval);countTimers=[];}
+function startCounters(el){
+  el.querySelectorAll('[data-target]').forEach(node=>{
+    const target=+node.getAttribute('data-target');
+    let val=0;const steps=55;const inc=target/steps;
+    const tid=setInterval(()=>{
+      val=Math.min(val+inc,target);node.textContent=Math.round(val);
+      if(val>=target)clearInterval(tid);
+    },1300/steps);
+    countTimers.push(tid);
+  });
+}
+function animateBars(el){
+  setTimeout(()=>{el.querySelectorAll('.bi-fill').forEach(b=>b.style.width=b.dataset.w+'%');},350);
+}
 function goTo(n){
-  if(isAnim||n===current)return;
-  isAnim=true;current=n;
-  camTarget=camTargets[n];
-  updateUI();
-  setTimeout(()=>{isAnim=false;},700);
+  if(busy||n===cur)return;busy=true;
+  stopCounters();
+  document.querySelectorAll('.bi-fill').forEach(b=>b.style.width='0%');
+  document.getElementById('s'+cur).classList.remove('active');
+  cur=n;
+  const sl=document.getElementById('s'+cur);sl.classList.add('active');
+  slides.forEach((g,i)=>g.visible=(i===n));
+  camT=camPositions[n];
+  startCounters(sl);
+  if(cur===6)animateBars(sl);
+  document.getElementById('prog-fill').style.width=((cur+1)/TOTAL*100)+'%';
+  document.getElementById('nctr').textContent=(cur+1)+' / '+TOTAL;
+  document.getElementById('prevBtn').disabled=cur===0;
+  document.getElementById('nextBtn').disabled=cur===TOTAL-1;
+  document.querySelectorAll('.ndot').forEach((d,i)=>d.classList.toggle('on',i===cur));
+  setTimeout(()=>busy=false,550);
 }
-function changeSlide(d){
-  const n=current+d;
-  if(n>=0&&n<total)goTo(n);
-}
-
-// Keyboard
-document.addEventListener('keydown',e=>{
-  if(e.key==='ArrowRight'||e.key===' ')changeSlide(1);
-  if(e.key==='ArrowLeft')changeSlide(-1);
-});
-// Touch
+function next(){if(cur<TOTAL-1)goTo(cur+1);}
+function prev(){if(cur>0)goTo(cur-1);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')next();if(e.key==='ArrowLeft')prev();});
 let tx=0;
 document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;});
-document.addEventListener('touchend',e=>{
-  const dx=tx-e.changedTouches[0].clientX;
-  if(Math.abs(dx)>60)changeSlide(dx>0?1:-1);
-});
+document.addEventListener('touchend',e=>{const dx=tx-e.changedTouches[0].clientX;if(Math.abs(dx)>55){dx>0?next():prev();}});
+startCounters(document.getElementById('s0'));
 
-// ────────── ANIMATION LOOP ──────────
+// ══════════════════════════════════════════════
+// ANIMATION LOOP
+// ══════════════════════════════════════════════
 const clock=new THREE.Clock();
-let t=0;
-
+let tt=0;
 function lerp(a,b,f){return a+(b-a)*f;}
+
+function tickGroup(g){
+  g.children.forEach(obj=>{
+    if(!obj.userData)return;
+    const u=obj.userData;
+    if(u.rx)obj.rotation.x+=u.rx;
+    if(u.ry)obj.rotation.y+=u.ry;
+    // float
+    if(u.float!==undefined&&u.floatSpeed){
+      obj.position.y+=Math.sin(tt*u.floatSpeed+u.float)*0.005;
+    }
+    // 2D orbit (around XY)
+    if(u.orbitR3D&&u.orbitAngle!==undefined){
+      u.orbitAngle+=u.orbitSpd*0.016;
+      obj.position.x=u.orbitCX+Math.cos(u.orbitAngle)*u.orbitRx;
+      obj.position.y=u.orbitCY+Math.sin(u.orbitAngle)*u.orbitRy;
+    }
+    // dot orbit
+    if(u.orbitCX!==undefined&&!u.orbitR3D){
+      u.orbitA+=u.orbitSpd*0.016;
+      obj.position.x=u.orbitCX+Math.cos(u.orbitA)*u.orbitR;
+      obj.position.y=u.orbitCY+Math.sin(u.orbitA)*u.orbitR;
+    }
+    // satellite
+    if(u.satCenter){
+      u.satAngle+=u.satSpeed*0.015;
+      obj.position.x=u.satCenter.x+Math.cos(u.satAngle)*u.satR;
+      obj.position.y=u.satCenter.y+Math.sin(u.satAngle)*u.satR;
+    }
+    // turbine blades spin
+    if(u.isTurbine){
+      obj.children.forEach(child=>{
+        if(child.userData&&child.userData.rz_spin!==undefined){}
+      });
+      // spin all blade groups (children 2-4 of turbine group)
+      for(let i=2;i<5;i++){
+        if(obj.children[i])obj.children[i].rotation.z+=0.04;
+      }
+    }
+    // flame flicker
+    if(u.floatSpeed&&u.float!==undefined&&obj.geometry&&obj.geometry.type==='ConeGeometry'){
+      obj.scale.x=1+Math.sin(tt*u.floatSpeed*2+u.float)*0.08;
+      obj.scale.z=1+Math.sin(tt*u.floatSpeed*2+u.float)*0.08;
+    }
+    // particles
+    if(obj.isPoints&&u.vel){
+      const pp=obj.geometry.attributes.position.array;
+      const n=u.n;
+      for(let i=0;i<n;i++){
+        pp[i*3]+=u.vel[i].x;pp[i*3+1]+=u.vel[i].y;pp[i*3+2]+=u.vel[i].z;
+        if(Math.abs(pp[i*3])>16)u.vel[i].x*=-1;
+        if(pp[i*3+1]>10)pp[i*3+1]=-6;
+        if(Math.abs(pp[i*3+2])>12)u.vel[i].z*=-1;
+      }
+      obj.geometry.attributes.position.needsUpdate=true;
+    }
+    // recurse into groups
+    if(obj.isGroup&&!u.isTurbine)tickGroup(obj);
+  });
+}
 
 function animate(){
   requestAnimationFrame(animate);
-  t=clock.getElapsedTime();
+  tt=clock.getElapsedTime();
 
-  // FIGURE ANIMATIONS
-  // Idle breathing
-  fig.position.y=-0.2+Math.sin(t*1.2)*0.025;
+  // Camera smooth lerp
+  camera.position.x=lerp(camera.position.x,camT.x,0.035);
+  camera.position.y=lerp(camera.position.y,camT.y,0.035);
+  camera.position.z=lerp(camera.position.z,camT.z,0.035);
+  camera.lookAt(lerp(camera.position.x*0.4,2,0.05),0.5,0);
 
-  // Head sway
-  headG.rotation.y=Math.sin(t*0.7)*0.12;
-  headG.rotation.x=Math.sin(t*0.5)*0.05-0.05;
+  // Tick current slide
+  tickGroup(slides[cur]);
 
-  // ARM GESTURES per slide
-  if(current===0){
-    // Welcoming spread
-    armL.rotation.z=0.15+Math.sin(t*1.5)*0.08;
-    armR.rotation.z=-0.3-Math.sin(t*1.5)*0.08;
-    armRG.rotation.x=Math.sin(t*1.5)*0.1;
-    armLG.rotation.x=Math.sin(t*1.5+1)*0.08;
-  } else if(current===1){
-    // Stat pointing
-    armR.rotation.z=-0.5;
-    armRG.rotation.x=-0.5;
-    armL.rotation.z=0.2+Math.sin(t*2)*0.1;
-    armLG.rotation.x=Math.sin(t*2)*0.1;
-  } else if(current===2){
-    // Presenting themes
-    armR.rotation.z=-0.6-Math.sin(t*1)*0.1;
-    armRG.rotation.x=-0.7;
-    armL.rotation.z=0.15;
-    armLG.rotation.x=0;
-  } else if(current===3){
-    // Counting phases
-    armL.rotation.z=0.3+Math.sin(t*0.8)*0.15;
-    armLG.rotation.x=-0.3+Math.sin(t*0.8)*0.2;
-    armR.rotation.z=-0.2;
-    armRG.rotation.x=0;
-  } else if(current===4){
-    // Big numbers celebration
-    armR.rotation.z=-0.4-Math.abs(Math.sin(t*1.5))*0.5;
-    armL.rotation.z=0.4+Math.abs(Math.sin(t*1.5))*0.5;
-    armRG.rotation.x=Math.sin(t*1.5)*0.2;
-    armLG.rotation.x=Math.sin(t*1.5+1)*0.2;
-  } else if(current===5){
-    // Results gesture
-    armR.rotation.z=-0.35;
-    armRG.rotation.x=-0.6;
-    armL.rotation.z=0.35;
-    armLG.rotation.x=-0.4;
-  } else if(current===6){
-    // Budget pointing
-    armR.rotation.z=-0.5;
-    armRG.rotation.x=-0.3;
-    armL.rotation.z=0.15+Math.sin(t*1.5)*0.1;
-    armLG.rotation.x=Math.sin(t*1.5)*0.1;
-  }
+  // BG embers
+  [embers,embers2].forEach(pts=>{
+    const pp=pts.geometry.attributes.position.array;
+    const vl=pts.userData.vel;const n=pts.userData.n;
+    for(let i=0;i<n;i++){
+      pp[i*3]+=vl[i].x;pp[i*3+1]+=vl[i].y;pp[i*3+2]+=vl[i].z;
+      if(Math.abs(pp[i*3])>22)vl[i].x*=-1;
+      if(pp[i*3+1]>14)pp[i*3+1]=-8;
+      if(Math.abs(pp[i*3+2])>16)vl[i].z*=-1;
+    }
+    pts.geometry.attributes.position.needsUpdate=true;
+  });
 
-  // Leg walking/idle
-  legL.rotation.x=Math.sin(t*0.5)*0.06;
-  legR.rotation.x=Math.sin(t*0.5+Math.PI)*0.06;
+  // Dynamic warm lights
+  rimOrange.position.x=-7+Math.sin(tt*0.25)*3;
+  rimOrange.position.z=-3+Math.cos(tt*0.2)*2;
+  rimOrange.intensity=4.5+Math.sin(tt*1.2)*1;
+  warmFill.intensity=2+Math.sin(tt*0.7)*0.6;
+  backGlow.intensity=2.5+Math.sin(tt*0.9)*0.8;
 
-  // Figure turning toward slides
-  fig.rotation.y=lerp(fig.rotation.y,-0.4+Math.sin(t*0.3)*0.1,0.02);
-
-  // CAMERA smooth lerp
-  camera.position.x=lerp(camera.position.x,camTarget.px,0.04);
-  camera.position.y=lerp(camera.position.y,camTarget.py,0.04);
-  camera.position.z=lerp(camera.position.z,camTarget.pz,0.04);
-  camera.lookAt(
-    lerp(camera.position.x*0.5,camTarget.lx,0.05),
-    camTarget.ly,
-    camTarget.lz
-  );
-
-  // PARTICLES
-  const pp=particles.geometry.attributes.position.array;
-  for(let i=0;i<particleCount;i++){
-    pp[i*3]+=pSpeeds[i].vx;
-    pp[i*3+1]+=pSpeeds[i].vy;
-    pp[i*3+2]+=pSpeeds[i].vz;
-    if(pp[i*3+1]>18){pp[i*3+1]=-2;}
-    if(Math.abs(pp[i*3])>15){pSpeeds[i].vx*=-1;}
-  }
-  particles.geometry.attributes.position.needsUpdate=true;
-
-  // Rim light orbit
-  rimLight.position.x=-4+Math.sin(t*0.3)*2;
-  rimLight.position.z=-2+Math.cos(t*0.3)*2;
-
-  // Stage ring pulse
-  ring.material.emissiveIntensity=1.2+Math.sin(t*2)*0.4;
-
-  // Screen holographic flicker
-  screenGlow.material.emissiveIntensity=0.3+Math.sin(t*8)*0.05+Math.random()*0.03;
+  // Floor grid drift
+  gridH.position.z=(tt*0.5)%2;
 
   renderer.render(scene,camera);
 }
-
 animate();
-updateUI();
 
-// ────────── RESIZE ──────────
 window.addEventListener('resize',()=>{
   const w=window.innerWidth,h=window.innerHeight;
-  renderer.setSize(w,h);
-  camera.aspect=w/h;
-  camera.updateProjectionMatrix();
-});
-
-// Budget bar init
-document.querySelectorAll('.brow-fill').forEach(b=>{
-  const style=b.getAttribute('style');
-  const m=style.match(/--w:([\d.]+%)/);
-  if(m)b.dataset.w=m[1];
-  b.style.width='0%';
+  renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();
 });
 </script>
 </body>
