@@ -3,658 +3,834 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EduGalp — Formação para o Futuro</title>
+<title>EduGalp — 3D Presentation</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a12;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif;color:#fff}
+#canvas-container{position:fixed;inset:0;z-index:0}
+canvas{display:block}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* HUD */
+#hud{position:fixed;inset:0;z-index:10;pointer-events:none}
 
-  :root {
-    --galp-orange: #FF6B00;
-    --galp-dark: #1A1A1A;
-    --galp-gray: #6B6B6B;
-    --galp-light: #F8F8F8;
-    --galp-white: #FFFFFF;
-    --slide-w: 100vw;
-    --slide-h: 100vh;
-  }
+/* Top bar */
+#topbar{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 40px;
+  background:linear-gradient(180deg,rgba(0,0,0,0.7) 0%,transparent 100%);
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-g{width:36px;height:36px;border-radius:50%;background:#FF6B00;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px}
+.logo-text{font-size:22px;font-weight:900;color:#FF6B00;letter-spacing:-0.5px}
+#slide-tag{font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.4);text-transform:uppercase}
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: #111;
-    overflow: hidden;
-    user-select: none;
-  }
+/* Speech bubble */
+#speech{
+  position:absolute;
+  bottom:200px;right:60px;
+  max-width:320px;
+  background:rgba(15,15,30,0.92);
+  border:1px solid rgba(255,107,0,0.4);
+  border-radius:20px 20px 4px 20px;
+  padding:20px 24px;
+  pointer-events:none;
+  opacity:0;
+  transform:translateY(10px) scale(0.95);
+  transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  backdrop-filter:blur(20px);
+  box-shadow:0 0 40px rgba(255,107,0,0.15);
+}
+#speech.show{opacity:1;transform:translateY(0) scale(1)}
+#speech-eyebrow{font-size:10px;letter-spacing:2px;color:#FF6B00;text-transform:uppercase;margin-bottom:6px}
+#speech-title{font-size:18px;font-weight:700;line-height:1.3;margin-bottom:8px}
+#speech-body{font-size:13px;line-height:1.6;color:rgba(255,255,255,0.7)}
+#speech-tail{
+  position:absolute;bottom:-10px;right:20px;
+  width:20px;height:10px;overflow:hidden;
+}
+#speech-tail::after{
+  content:'';position:absolute;top:-10px;right:5px;
+  width:15px;height:15px;
+  background:rgba(15,15,30,0.92);
+  border:1px solid rgba(255,107,0,0.4);
+  transform:rotate(45deg);
+}
 
-  /* ── DECK WRAPPER ── */
-  .deck { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+/* Stat cards floating */
+.stat-float{
+  position:absolute;
+  background:rgba(10,10,20,0.88);
+  border:1px solid rgba(255,107,0,0.3);
+  border-radius:16px;padding:16px 20px;
+  pointer-events:none;
+  opacity:0;transform:translateY(20px);
+  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  backdrop-filter:blur(16px);
+  min-width:120px;text-align:center;
+}
+.stat-float.show{opacity:1;transform:translateY(0)}
+.stat-num{font-size:40px;font-weight:900;color:#FF6B00;line-height:1}
+.stat-lbl{font-size:11px;letter-spacing:1.5px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-top:4px}
+#sf1{top:30%;left:4%}
+#sf2{top:42%;left:4%}
+#sf3{top:54%;left:4%}
 
-  /* ── SLIDES ── */
-  .slide {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    display: flex;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.6s ease, transform 0.6s ease;
-    transform: translateX(60px);
-    background: var(--galp-white);
-  }
-  .slide.active {
-    opacity: 1; pointer-events: all; transform: translateX(0);
-  }
-  .slide.exit {
-    opacity: 0; transform: translateX(-60px);
-  }
+/* Theme cards */
+.theme-float{
+  position:absolute;
+  background:rgba(10,10,20,0.88);
+  border:1px solid rgba(255,107,0,0.25);
+  border-radius:14px;padding:14px 18px;
+  pointer-events:none;
+  opacity:0;transform:scale(0.8);
+  transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  backdrop-filter:blur(16px);
+  width:170px;
+}
+.theme-float.show{opacity:1;transform:scale(1)}
+.theme-float .tf-icon{font-size:24px;margin-bottom:6px}
+.theme-float .tf-name{font-size:13px;font-weight:700}
+.theme-float .tf-desc{font-size:11px;color:rgba(255,255,255,0.5);margin-top:3px;line-height:1.4}
+#tf1{top:22%;left:4%}
+#tf2{top:42%;left:4%}
+#tf3{top:22%;right:55%}
+#tf4{top:42%;right:55%}
 
-  /* ── NAV ── */
-  .nav {
-    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
-    display: flex; align-items: center; gap: 16px;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 50px;
-    padding: 10px 20px;
-    z-index: 1000;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-  }
-  .nav-btn {
-    width: 38px; height: 38px; border-radius: 50%;
-    border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-    background: var(--galp-light);
-    color: var(--galp-dark);
-    transition: all 0.2s;
-  }
-  .nav-btn:hover { background: var(--galp-orange); color: white; transform: scale(1.05); }
-  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .nav-btn:disabled:hover { background: var(--galp-light); color: var(--galp-dark); transform: none; }
-  .slide-counter { font-size: 13px; font-weight: 600; color: var(--galp-gray); min-width: 50px; text-align: center; }
-  .dots { display: flex; gap: 6px; align-items: center; }
-  .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #DDD; cursor: pointer;
-    transition: all 0.3s;
-  }
-  .dot.active { background: var(--galp-orange); transform: scale(1.3); }
+/* Phase steps */
+.phase-step{
+  position:absolute;
+  background:rgba(10,10,20,0.88);
+  border-left:3px solid #FF6B00;
+  border-radius:0 12px 12px 0;
+  padding:12px 18px;
+  pointer-events:none;
+  opacity:0;transform:translateX(-20px);
+  transition:all 0.4s ease;
+  backdrop-filter:blur(16px);
+  width:200px;
+}
+.phase-step.show{opacity:1;transform:translateX(0)}
+.phase-step .ps-num{font-size:10px;letter-spacing:2px;color:#FF6B00;font-weight:700}
+.phase-step .ps-name{font-size:13px;font-weight:700;margin-top:2px}
+#ps1{top:18%;left:4%}
+#ps2{top:31%;left:4%}
+#ps3{top:44%;left:4%}
+#ps4{top:57%;left:4%}
+#ps5{top:70%;left:4%}
 
-  /* ── SLIDE 1: COVER ── */
-  #s1 { background: var(--galp-white); }
-  .s1-left {
-    flex: 0 0 45%;
-    display: flex; flex-direction: column;
-    justify-content: center;
-    padding: 60px 50px 60px 70px;
-  }
-  .s1-right {
-    flex: 1;
-    background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 50%, #E65C00 100%);
-    position: relative; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .s1-right::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80') center/cover;
-    opacity: 0.25;
-  }
-  .s1-right-content {
-    position: relative; z-index: 1;
-    text-align: center; color: white;
-    padding: 40px;
-  }
-  .s1-right-content h2 {
-    font-size: 42px; font-weight: 900;
-    line-height: 1.1;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
-  }
-  .s1-right-content p {
-    font-size: 16px; opacity: 0.9;
-    margin-top: 16px; font-weight: 400;
-    max-width: 320px; margin: 16px auto 0;
-  }
-  .galp-logo { display: flex; align-items: center; gap: 8px; margin-bottom: 48px; }
-  .galp-logo-text { font-size: 28px; font-weight: 900; color: var(--galp-orange); letter-spacing: -0.5px; }
-  .galp-logo-g {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: var(--galp-orange);
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-weight: 900; font-size: 18px;
-  }
-  .s1-eyebrow {
-    font-size: 11px; font-weight: 700; letter-spacing: 2px;
-    color: var(--galp-orange); text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-  .s1-title { font-size: 56px; font-weight: 900; line-height: 1.0; color: var(--galp-dark); }
-  .s1-subtitle {
-    font-size: 16px; color: var(--galp-gray); line-height: 1.6;
-    margin-top: 20px; max-width: 340px;
-  }
-  .s1-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--galp-orange); color: white;
-    border-radius: 30px; padding: 10px 20px;
-    font-size: 13px; font-weight: 700;
-    margin-top: 40px;
-    animation: pulse 2.5s infinite;
-  }
-  @keyframes pulse {
-    0%,100% { transform: scale(1); }
-    50% { transform: scale(1.03); }
-  }
+/* Budget bars */
+#budget-panel{
+  position:absolute;top:20%;right:4%;
+  width:260px;
+  opacity:0;transform:translateX(20px);
+  transition:all 0.5s ease;
+  pointer-events:none;
+}
+#budget-panel.show{opacity:1;transform:translateX(0)}
+.brow{margin-bottom:10px}
+.brow-top{display:flex;justify-content:space-between;margin-bottom:5px}
+.brow-name{font-size:12px;color:rgba(255,255,255,0.7)}
+.brow-val{font-size:12px;font-weight:700;color:#FF6B00}
+.brow-track{height:5px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden}
+.brow-fill{height:100%;background:#FF6B00;border-radius:3px;width:0;transition:width 1.2s ease}
 
-  /* ── SLIDE 2: CONTEXT ── */
-  #s2 .s1-right { background: linear-gradient(160deg, #1A1A1A 0%, #2D2D2D 100%); }
-  #s2 .s1-right::before { opacity: 0.15; }
-  .stats-row { display: flex; gap: 32px; margin-top: 40px; }
-  .stat-box {
-    text-align: center;
-    padding: 24px 28px;
-    border-radius: 16px;
-    background: var(--galp-light);
-    border: 2px solid transparent;
-    transition: all 0.3s;
-    cursor: default;
-  }
-  .stat-box:hover { border-color: var(--galp-orange); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(255,107,0,0.15); }
-  .stat-num { font-size: 44px; font-weight: 900; color: var(--galp-orange); line-height: 1; }
-  .stat-label { font-size: 12px; font-weight: 600; color: var(--galp-gray); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+/* Nav */
+#nav{
+  position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:12px;
+  background:rgba(10,10,20,0.8);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:50px;padding:10px 20px;
+  pointer-events:all;
+  backdrop-filter:blur(20px);
+}
+.nbtn{
+  width:40px;height:40px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.15);
+  background:transparent;color:#fff;
+  cursor:pointer;font-size:16px;
+  transition:all 0.2s;display:flex;align-items:center;justify-content:center;
+}
+.nbtn:hover{background:#FF6B00;border-color:#FF6B00;transform:scale(1.1)}
+.nbtn:disabled{opacity:0.3;cursor:not-allowed}
+.nbtn:disabled:hover{background:transparent;border-color:rgba(255,255,255,0.15);transform:none}
+.ndot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(255,255,255,0.25);cursor:pointer;
+  transition:all 0.3s;pointer-events:all;
+}
+.ndot.on{background:#FF6B00;transform:scale(1.4)}
+#nctr{font-size:12px;font-weight:600;color:rgba(255,255,255,0.4);min-width:44px;text-align:center}
 
-  /* ── SLIDE 3: OBJECTIVES ── */
-  #s3 { flex-direction: column; padding: 60px 70px; }
-  .slide-eyebrow {
-    font-size: 11px; font-weight: 700; letter-spacing: 2px;
-    color: var(--galp-orange); text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .slide-title { font-size: 40px; font-weight: 900; color: var(--galp-dark); margin-bottom: 40px; }
-  .themes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; flex: 1; }
-  .theme-card {
-    border-radius: 20px;
-    padding: 32px 24px;
-    display: flex; flex-direction: column;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative; overflow: hidden;
-    border: 2px solid #EBEBEB;
-  }
-  .theme-card::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(255,107,0,0.08), transparent);
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .theme-card:hover { transform: translateY(-6px); border-color: var(--galp-orange); box-shadow: 0 12px 36px rgba(255,107,0,0.15); }
-  .theme-card:hover::after { opacity: 1; }
-  .theme-num { font-size: 11px; font-weight: 800; color: var(--galp-orange); letter-spacing: 2px; margin-bottom: 16px; }
-  .theme-icon { font-size: 40px; margin-bottom: 16px; }
-  .theme-name { font-size: 18px; font-weight: 800; color: var(--galp-dark); margin-bottom: 10px; }
-  .theme-desc { font-size: 13px; color: var(--galp-gray); line-height: 1.6; }
+/* Progress */
+#prog{position:absolute;top:0;left:0;right:0;height:2px;background:rgba(255,255,255,0.06)}
+#prog-fill{height:100%;background:#FF6B00;transition:width 0.4s ease}
 
-  /* ── SLIDE 4: METHODOLOGY ── */
-  #s4 { flex-direction: column; padding: 60px 70px; }
-  .phases-row { display: flex; gap: 0; flex: 1; align-items: stretch; }
-  .phase-item {
-    flex: 1;
-    display: flex; flex-direction: column;
-    align-items: center; text-align: center;
-    padding: 28px 16px;
-    cursor: pointer;
-    position: relative;
-    border-radius: 16px;
-    transition: all 0.3s;
-    border: 2px solid transparent;
-  }
-  .phase-item:hover, .phase-item.open {
-    background: rgba(255,107,0,0.06);
-    border-color: var(--galp-orange);
-  }
-  .phase-connector {
-    position: absolute; top: 48px; right: -1px;
-    width: 2px; height: 30px;
-    background: #E0E0E0;
-  }
-  .phase-item:last-child .phase-connector { display: none; }
-  .phase-circle {
-    width: 64px; height: 64px; border-radius: 50%;
-    background: var(--galp-light);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 28px;
-    margin-bottom: 16px;
-    transition: all 0.3s;
-    border: 2px solid #E0E0E0;
-  }
-  .phase-item:hover .phase-circle, .phase-item.open .phase-circle {
-    background: var(--galp-orange);
-    border-color: var(--galp-orange);
-    transform: scale(1.1);
-  }
-  .phase-num { font-size: 11px; font-weight: 800; color: var(--galp-orange); letter-spacing: 2px; margin-bottom: 6px; }
-  .phase-name { font-size: 14px; font-weight: 700; color: var(--galp-dark); line-height: 1.3; }
-  .phase-detail {
-    margin-top: 10px; font-size: 12px; color: var(--galp-gray);
-    line-height: 1.5; opacity: 0;
-    max-height: 0; overflow: hidden;
-    transition: all 0.4s;
-  }
-  .phase-item.open .phase-detail { opacity: 1; max-height: 80px; }
-  .phase-hint {
-    font-size: 12px; color: var(--galp-gray);
-    margin-top: 24px; text-align: center;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .phase-hint span { font-size: 16px; }
+/* KB hint */
+#kbhint{position:absolute;bottom:30px;right:30px;font-size:11px;color:rgba(255,255,255,0.2)}
 
-  /* ── SLIDE 5: METAS ── */
-  #s5 { flex-direction: column; padding: 60px 70px; }
-  .metas-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; flex: 1; align-items: center; }
-  .meta-card {
-    border-radius: 20px;
-    padding: 36px 24px;
-    text-align: center;
-    background: var(--galp-dark);
-    color: white;
-    transition: all 0.3s;
-    cursor: default;
-  }
-  .meta-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.2); }
-  .meta-card:nth-child(1) { background: var(--galp-orange); }
-  .meta-card:nth-child(2) { background: #1A1A1A; }
-  .meta-card:nth-child(3) { background: #2D2D2D; }
-  .meta-card:nth-child(4) { background: #FF8C00; }
-  .meta-big { font-size: 64px; font-weight: 900; line-height: 1; }
-  .meta-label-top { font-size: 11px; font-weight: 700; letter-spacing: 2px; opacity: 0.7; margin-bottom: 8px; text-transform: uppercase; }
-  .meta-label-bot { font-size: 13px; font-weight: 600; opacity: 0.8; margin-top: 8px; }
+/* Result cards */
+.res-card{
+  position:absolute;
+  background:rgba(10,10,20,0.88);
+  border:1px solid rgba(255,107,0,0.25);
+  border-radius:16px;padding:18px 20px;
+  width:210px;
+  pointer-events:none;
+  opacity:0;transform:translateY(20px);
+  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  backdrop-filter:blur(16px);
+}
+.res-card.show{opacity:1;transform:translateY(0)}
+.rc-icon{font-size:28px;margin-bottom:8px}
+.rc-title{font-size:14px;font-weight:700;margin-bottom:6px}
+.rc-desc{font-size:11px;color:rgba(255,255,255,0.55);line-height:1.5}
+#rc1{top:20%;left:4%}
+#rc2{top:20%;left:calc(4% + 230px)}
+#rc3{top:55%;left:4%}
 
-  /* ── SLIDE 6: RESULTS ── */
-  #s6 { flex-direction: column; padding: 60px 70px; }
-  .results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; flex: 1; }
-  .result-card {
-    border-radius: 20px;
-    padding: 36px 28px;
-    background: var(--galp-light);
-    border: 2px solid transparent;
-    transition: all 0.3s;
-    cursor: default;
-    display: flex; flex-direction: column;
-  }
-  .result-card:hover { border-color: var(--galp-orange); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(255,107,0,0.1); }
-  .result-icon { font-size: 48px; margin-bottom: 20px; }
-  .result-title { font-size: 20px; font-weight: 800; color: var(--galp-dark); margin-bottom: 12px; }
-  .result-desc { font-size: 14px; color: var(--galp-gray); line-height: 1.7; flex: 1; }
+/* Meta big */
+.meta-big-card{
+  position:absolute;
+  background:rgba(255,107,0,0.12);
+  border:1px solid rgba(255,107,0,0.5);
+  border-radius:20px;padding:20px 28px;
+  pointer-events:none;
+  opacity:0;transform:scale(0.85);
+  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  text-align:center;
+}
+.meta-big-card.show{opacity:1;transform:scale(1)}
+.mbc-big{font-size:56px;font-weight:900;color:#FF6B00;line-height:1}
+.mbc-lbl{font-size:11px;letter-spacing:2px;color:rgba(255,255,255,0.5);text-transform:uppercase;margin-top:4px}
+#mb1{top:20%;left:4%}
+#mb2{top:20%;left:calc(4% + 160px)}
+#mb3{top:50%;left:4%}
+#mb4{top:50%;left:calc(4% + 160px)}
 
-  /* ── SLIDE 7: BUDGET ── */
-  #s7 { flex-direction: column; padding: 60px 70px; }
-  .budget-total {
-    display: flex; align-items: baseline; gap: 12px;
-    margin-bottom: 36px;
-  }
-  .budget-total-num { font-size: 72px; font-weight: 900; color: var(--galp-orange); line-height: 1; }
-  .budget-total-sub { font-size: 16px; color: var(--galp-gray); }
-  .budget-items { display: flex; flex-direction: column; gap: 12px; flex: 1; justify-content: center; }
-  .budget-row {
-    display: flex; align-items: center; gap: 16px;
-    padding: 16px 20px;
-    border-radius: 12px;
-    background: var(--galp-light);
-    transition: all 0.3s;
-    cursor: default;
-  }
-  .budget-row:hover { background: rgba(255,107,0,0.08); transform: translateX(4px); }
-  .budget-bar-wrap { flex: 1; height: 6px; background: #E0E0E0; border-radius: 3px; }
-  .budget-bar { height: 100%; border-radius: 3px; background: var(--galp-orange); transition: width 1s ease; }
-  .budget-name { font-size: 14px; font-weight: 600; color: var(--galp-dark); width: 200px; }
-  .budget-eur { font-size: 15px; font-weight: 800; color: var(--galp-orange); width: 60px; text-align: right; }
-  .budget-mzn { font-size: 12px; color: var(--galp-gray); width: 90px; text-align: right; }
-
-  /* ── PROGRESS BAR ── */
-  .progress-bar {
-    position: fixed; top: 0; left: 0; right: 0;
-    height: 3px; background: rgba(0,0,0,0.08);
-    z-index: 1000;
-  }
-  .progress-fill {
-    height: 100%; background: var(--galp-orange);
-    transition: width 0.4s ease;
-  }
-
-  /* ── KEYBOARD HINT ── */
-  .kb-hint {
-    position: fixed; top: 16px; right: 20px;
-    font-size: 11px; color: rgba(0,0,0,0.3);
-    font-weight: 500; z-index: 999;
-  }
-
-  /* ── ANIMATIONS ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .slide.active .anim { animation: fadeUp 0.5s ease forwards; }
-  .slide.active .anim-1 { animation-delay: 0.1s; opacity: 0; }
-  .slide.active .anim-2 { animation-delay: 0.2s; opacity: 0; }
-  .slide.active .anim-3 { animation-delay: 0.3s; opacity: 0; }
-  .slide.active .anim-4 { animation-delay: 0.4s; opacity: 0; }
-  .slide.active .anim-5 { animation-delay: 0.5s; opacity: 0; }
+/* Ambient glow */
+.glow-orb{
+  position:absolute;border-radius:50%;filter:blur(80px);
+  pointer-events:none;opacity:0.12;
+}
 </style>
 </head>
 <body>
+<div id="canvas-container"></div>
 
-<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-<div class="kb-hint">← → para navegar &nbsp;|&nbsp; ESC para overview</div>
+<div id="hud">
+  <!-- Ambient glow -->
+  <div class="glow-orb" style="width:400px;height:400px;background:#FF6B00;bottom:-100px;right:200px"></div>
+  <div class="glow-orb" style="width:300px;height:300px;background:#6B00FF;top:-50px;left:100px"></div>
 
-<div class="deck" id="deck">
+  <!-- Progress -->
+  <div id="prog"><div id="prog-fill"></div></div>
 
-  <!-- SLIDE 1: COVER -->
-  <div class="slide active" id="s1">
-    <div class="s1-left">
-      <div class="galp-logo anim anim-1">
-        <div class="galp-logo-g">g</div>
-        <span class="galp-logo-text">galp</span>
-      </div>
-      <div class="s1-eyebrow anim anim-2">GALP · MOZAMBIQUE · 2025</div>
-      <div class="s1-title anim anim-3">EduGalp</div>
-      <div class="s1-subtitle anim anim-4">
-        Formação para o Futuro — um programa de educação para a sustentabilidade nas escolas de Moçambique.
-      </div>
-      <div class="s1-badge anim anim-5">
-        🎓 Programa Educativo 2025
-      </div>
+  <!-- Top bar -->
+  <div id="topbar">
+    <div class="logo">
+      <div class="logo-g">g</div>
+      <span class="logo-text">galp</span>
     </div>
-    <div class="s1-right">
-      <div class="s1-right-content">
-        <h2>Educar.<br>Inovar.<br>Transformar.</h2>
-        <p>O Futuro É Teu</p>
-      </div>
-    </div>
+    <div id="slide-tag">EDUGALP · 2025</div>
   </div>
 
-  <!-- SLIDE 2: CONTEXT -->
-  <div class="slide" id="s2">
-    <div class="s1-right" style="flex:0 0 48%; order:1;">
-      <div class="s1-right-content">
-        <div style="font-size:64px;">🏫</div>
-        <h2 style="font-size:32px; margin-top:16px;">Os jovens são os agentes de mudança de amanhã</h2>
-      </div>
-    </div>
-    <div class="s1-left" style="flex:1; order:2; padding:60px 70px 60px 50px;">
-      <div class="slide-eyebrow anim anim-1">CONTEXTUALIZAÇÃO</div>
-      <div class="slide-title anim anim-2" style="margin-bottom:16px;">O Futuro Começa Hoje</div>
-      <div class="s1-subtitle anim anim-3" style="margin-top:0;">
-        Os jovens estudantes de Moçambique são os agentes de mudança de amanhã. O EduGalp aproxima a Galp das escolas, criando consciência sobre sustentabilidade de forma prática e interativa.
-      </div>
-      <div class="stats-row anim anim-4">
-        <div class="stat-box">
-          <div class="stat-num">4</div>
-          <div class="stat-label">Escolas</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num">480</div>
-          <div class="stat-label">Estudantes</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num">5</div>
-          <div class="stat-label">Fases</div>
-        </div>
-      </div>
-    </div>
+  <!-- Speech bubble -->
+  <div id="speech">
+    <div id="speech-eyebrow"></div>
+    <div id="speech-title"></div>
+    <div id="speech-body"></div>
+    <div id="speech-tail"></div>
   </div>
 
-  <!-- SLIDE 3: OBJECTIVES -->
-  <div class="slide" id="s3">
-    <div class="slide-eyebrow anim anim-1">OBJETIVOS</div>
-    <div class="slide-title anim anim-2">4 Temas de Sustentabilidade</div>
-    <div class="themes-grid">
-      <div class="theme-card anim anim-2">
-        <div class="theme-num">01</div>
-        <div class="theme-icon">♻️</div>
-        <div class="theme-name">Gestão de Resíduos</div>
-        <div class="theme-desc">Práticas de reciclagem, redução e reutilização no dia a dia.</div>
-      </div>
-      <div class="theme-card anim anim-3">
-        <div class="theme-num">02</div>
-        <div class="theme-icon">⚡</div>
-        <div class="theme-name">Carvão vs Gás</div>
-        <div class="theme-desc">Comparação de impacto ambiental e vantagens do gás natural.</div>
-      </div>
-      <div class="theme-card anim anim-4">
-        <div class="theme-num">03</div>
-        <div class="theme-icon">☀️</div>
-        <div class="theme-name">Energias Renováveis</div>
-        <div class="theme-desc">Solar, eólica e outras fontes limpas para um futuro sustentável.</div>
-      </div>
-      <div class="theme-card anim anim-5">
-        <div class="theme-num">04</div>
-        <div class="theme-icon">💧</div>
-        <div class="theme-name">Consumo Responsável de Água</div>
-        <div class="theme-desc">Gestão eficiente e preservação dos recursos hídricos.</div>
-      </div>
-    </div>
+  <!-- Slide 2: Stat floats -->
+  <div class="stat-float" id="sf1"><div class="stat-num">4</div><div class="stat-lbl">Escolas</div></div>
+  <div class="stat-float" id="sf2"><div class="stat-num">480</div><div class="stat-lbl">Estudantes</div></div>
+  <div class="stat-float" id="sf3"><div class="stat-num">5</div><div class="stat-lbl">Fases</div></div>
+
+  <!-- Slide 3: Theme cards -->
+  <div class="theme-float" id="tf1"><div class="tf-icon">♻️</div><div class="tf-name">Gestão de Resíduos</div><div class="tf-desc">Reciclagem e reutilização no dia a dia</div></div>
+  <div class="theme-float" id="tf2"><div class="tf-icon">⚡</div><div class="tf-name">Carvão vs Gás</div><div class="tf-desc">Impacto ambiental e vantagens do gás</div></div>
+  <div class="theme-float" id="tf3"><div class="tf-icon">☀️</div><div class="tf-name">Energias Renováveis</div><div class="tf-desc">Solar, eólica e fontes limpas</div></div>
+  <div class="theme-float" id="tf4"><div class="tf-icon">💧</div><div class="tf-name">Consumo de Água</div><div class="tf-desc">Preservação dos recursos hídricos</div></div>
+
+  <!-- Slide 4: Phase steps -->
+  <div class="phase-step" id="ps1"><div class="ps-num">FASE 01</div><div class="ps-name">📱 Desenvolvimento da App</div></div>
+  <div class="phase-step" id="ps2"><div class="ps-num">FASE 02</div><div class="ps-name">📚 Preparação dos Conteúdos</div></div>
+  <div class="phase-step" id="ps3"><div class="ps-num">FASE 03</div><div class="ps-name">🏫 Sessões de Workshops</div></div>
+  <div class="phase-step" id="ps4"><div class="ps-num">FASE 04</div><div class="ps-name">🎯 Quizzes via App</div></div>
+  <div class="phase-step" id="ps5"><div class="ps-num">FASE 05</div><div class="ps-name">🏆 Certificados Digitais</div></div>
+
+  <!-- Slide 5: Metas -->
+  <div class="meta-big-card" id="mb1"><div class="mbc-big">4</div><div class="mbc-lbl">Escolas</div></div>
+  <div class="meta-big-card" id="mb2"><div class="mbc-big">472</div><div class="mbc-lbl">Estudantes</div></div>
+  <div class="meta-big-card" id="mb3"><div class="mbc-big">2</div><div class="mbc-lbl">Sessões/Escola</div></div>
+  <div class="meta-big-card" id="mb4"><div class="mbc-big">109</div><div class="mbc-lbl">Alunos/Sessão</div></div>
+
+  <!-- Slide 6: Results -->
+  <div class="res-card" id="rc1"><div class="rc-icon">🎓</div><div class="rc-title">Futuros Colaboradores</div><div class="rc-desc">Jovens com base em sustentabilidade, prontos para a Galp.</div></div>
+  <div class="res-card" id="rc2"><div class="rc-icon">🌱</div><div class="rc-title">Comunidade Escolar</div><div class="rc-desc">Efeito multiplicador nas práticas sustentáveis.</div></div>
+  <div class="res-card" id="rc3"><div class="rc-icon">🔥</div><div class="rc-title">Crescimento de Mercado</div><div class="rc-desc">Liderança em sustentabilidade juvenil.</div></div>
+
+  <!-- Slide 7: Budget -->
+  <div id="budget-panel">
+    <div style="font-size:11px;letter-spacing:2px;color:#FF6B00;text-transform:uppercase;margin-bottom:16px">Orçamento Anual</div>
+    <div style="font-size:48px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px">€ 4.200</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:24px">336.000 MZN</div>
+    <div class="brow"><div class="brow-top"><span class="brow-name">☕ Coffee Break</span><span class="brow-val">€1.550</span></div><div class="brow-track"><div class="brow-fill" style="--w:37%"></div></div></div>
+    <div class="brow"><div class="brow-top"><span class="brow-name">🖥️ Equip. Técnico</span><span class="brow-val">€950</span></div><div class="brow-track"><div class="brow-fill" style="--w:23%"></div></div></div>
+    <div class="brow"><div class="brow-top"><span class="brow-name">📱 Dev. da App</span><span class="brow-val">€700</span></div><div class="brow-track"><div class="brow-fill" style="--w:17%"></div></div></div>
+    <div class="brow"><div class="brow-top"><span class="brow-name">🏆 Kit Premiação</span><span class="brow-val">€500</span></div><div class="brow-track"><div class="brow-fill" style="--w:12%"></div></div></div>
+    <div class="brow"><div class="brow-top"><span class="brow-name">🚗 Deslocação</span><span class="brow-val">€250</span></div><div class="brow-track"><div class="brow-fill" style="--w:6%"></div></div></div>
+    <div class="brow"><div class="brow-top"><span class="brow-name">📣 Marketing</span><span class="brow-val">€200</span></div><div class="brow-track"><div class="brow-fill" style="--w:5%"></div></div></div>
   </div>
 
-  <!-- SLIDE 4: METHODOLOGY -->
-  <div class="slide" id="s4">
-    <div class="slide-eyebrow anim anim-1">METODOLOGIA</div>
-    <div class="slide-title anim anim-2">A Jornada em 5 Fases</div>
-    <div class="phases-row anim anim-3">
-      <div class="phase-item" onclick="togglePhase(this)">
-        <div class="phase-connector"></div>
-        <div class="phase-circle">📱</div>
-        <div class="phase-num">FASE 01</div>
-        <div class="phase-name">Desenvolvimento da App</div>
-        <div class="phase-detail">Criação de uma aplicação interativa para quizzes e conteúdos de sustentabilidade, acessível nas escolas.</div>
-      </div>
-      <div class="phase-item" onclick="togglePhase(this)">
-        <div class="phase-connector"></div>
-        <div class="phase-circle">📚</div>
-        <div class="phase-num">FASE 02</div>
-        <div class="phase-name">Preparação dos Conteúdos</div>
-        <div class="phase-detail">Desenvolvimento de materiais educativos alinhados aos 4 temas de sustentabilidade.</div>
-      </div>
-      <div class="phase-item" onclick="togglePhase(this)">
-        <div class="phase-connector"></div>
-        <div class="phase-circle">🏫</div>
-        <div class="phase-num">FASE 03</div>
-        <div class="phase-name">Sessões de Workshops</div>
-        <div class="phase-detail">Realização de workshops presenciais nas 4 escolas participantes.</div>
-      </div>
-      <div class="phase-item" onclick="togglePhase(this)">
-        <div class="phase-connector"></div>
-        <div class="phase-circle">🎯</div>
-        <div class="phase-num">FASE 04</div>
-        <div class="phase-name">Quizzes via App</div>
-        <div class="phase-detail">Avaliação dos conhecimentos adquiridos através de quizzes na aplicação EduGalp.</div>
-      </div>
-      <div class="phase-item" onclick="togglePhase(this)">
-        <div class="phase-connector"></div>
-        <div class="phase-circle">🏆</div>
-        <div class="phase-num">FASE 05</div>
-        <div class="phase-name">Certificados Digitais</div>
-        <div class="phase-detail">Emissão de certificados digitais para todos os estudantes que completem o programa.</div>
-      </div>
-    </div>
-    <div class="phase-hint anim anim-4"><span>👆</span> Clique em cada fase para saber mais</div>
+  <!-- Nav -->
+  <div id="nav">
+    <button class="nbtn" id="prevBtn" onclick="changeSlide(-1)" disabled>&#8592;</button>
+    <div id="dotswrap"></div>
+    <span id="nctr">1 / 7</span>
+    <button class="nbtn" id="nextBtn" onclick="changeSlide(1)">&#8594;</button>
   </div>
 
-  <!-- SLIDE 5: METAS -->
-  <div class="slide" id="s5">
-    <div class="slide-eyebrow anim anim-1">METAS</div>
-    <div class="slide-title anim anim-2">Alcance do Programa</div>
-    <div class="metas-grid">
-      <div class="meta-card anim anim-2">
-        <div class="meta-label-top">Escolas</div>
-        <div class="meta-big">4</div>
-        <div class="meta-label-bot">Participantes</div>
-      </div>
-      <div class="meta-card anim anim-3">
-        <div class="meta-label-top">Estudantes</div>
-        <div class="meta-big">472</div>
-        <div class="meta-label-bot">Alcançados</div>
-      </div>
-      <div class="meta-card anim anim-4">
-        <div class="meta-label-top">Sessões</div>
-        <div class="meta-big">2</div>
-        <div class="meta-label-bot">Por escola</div>
-      </div>
-      <div class="meta-card anim anim-5">
-        <div class="meta-label-top">Alunos</div>
-        <div class="meta-big">109</div>
-        <div class="meta-label-bot">Por sessão</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 6: RESULTS -->
-  <div class="slide" id="s6">
-    <div class="slide-eyebrow anim anim-1">RESULTADOS ESPERADOS</div>
-    <div class="slide-title anim anim-2">O Impacto que Queremos Criar</div>
-    <div class="results-grid">
-      <div class="result-card anim anim-3">
-        <div class="result-icon">🎓</div>
-        <div class="result-title">Futuros Colaboradores</div>
-        <div class="result-desc">Jovens com conhecimento base de sustentabilidade, prontos para integrar a Galp com uma visão consciente.</div>
-      </div>
-      <div class="result-card anim anim-4">
-        <div class="result-icon">🌱</div>
-        <div class="result-title">Comunidade Escolar</div>
-        <div class="result-desc">Maior envolvimento das escolas em práticas sustentáveis, criando um efeito multiplicador.</div>
-      </div>
-      <div class="result-card anim anim-5">
-        <div class="result-icon">🔥</div>
-        <div class="result-title">Crescimento de Mercado</div>
-        <div class="result-desc">Aumento do consumo de gás Galp e posicionamento como líder em sustentabilidade juvenil.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIDE 7: BUDGET -->
-  <div class="slide" id="s7">
-    <div class="slide-eyebrow anim anim-1">ORÇAMENTO ANUAL</div>
-    <div class="slide-title anim anim-2" style="margin-bottom:8px;">Investimento</div>
-    <div class="budget-total anim anim-2">
-      <div class="budget-total-num">€ 4.200</div>
-      <div class="budget-total-sub">/ 336.000 MZN</div>
-    </div>
-    <div class="budget-items">
-      <div class="budget-row anim anim-2">
-        <div class="budget-name">☕ Coffee Break</div>
-        <div class="budget-bar-wrap"><div class="budget-bar" style="width:37%"></div></div>
-        <div class="budget-eur">€ 1.550</div>
-        <div class="budget-mzn">125.000 MZN</div>
-      </div>
-      <div class="budget-row anim anim-3">
-        <div class="budget-name">🖥️ Equip. Técnico</div>
-        <div class="budget-bar-wrap"><div class="budget-bar" style="width:23%"></div></div>
-        <div class="budget-eur">€ 950</div>
-        <div class="budget-mzn">77.000 MZN</div>
-      </div>
-      <div class="budget-row anim anim-3">
-        <div class="budget-name">📱 Dev. da App</div>
-        <div class="budget-bar-wrap"><div class="budget-bar" style="width:17%"></div></div>
-        <div class="budget-eur">€ 700</div>
-        <div class="budget-mzn">57.400 MZN</div>
-      </div>
-      <div class="budget-row anim anim-4">
-        <div class="budget-name">🏆 Kit Premiação</div>
-        <div class="budget-bar-wrap"><div class="budget-bar" style="width:12%"></div></div>
-        <div class="budget-eur">€ 500</div>
-        <div class="budget-mzn">40.400 MZN</div>
-      </div>
-      <div class="budget-row anim anim-4">
-        <div class="budget-name">🚗 Deslocação</div>
-        <div class="budget-bar-wrap"><div class="budget-bar" style="width:6%"></div></div>
-        <div class="budget-eur">€ 250</div>
-        <div class="budget-mzn">20.000 MZN</div>
-      </div>
-      <div class="budget-row anim anim-5">
-        <div class="budget-name">📣 Marketing</div>
-        <div class="budget-bar-wrap"><div class="budget-bar" style="width:5%"></div></div>
-        <div class="budget-eur">€ 200</div>
-        <div class="budget-mzn">16.000 MZN</div>
-      </div>
-    </div>
-  </div>
-
+  <div id="kbhint">← → para navegar</div>
 </div>
 
-<!-- NAV -->
-<nav class="nav">
-  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)" disabled>←</button>
-  <div class="dots" id="dots"></div>
-  <span class="slide-counter" id="counter">1 / 7</span>
-  <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">→</button>
-</nav>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-  const slides = document.querySelectorAll('.slide');
-  const total = slides.length;
-  let current = 0;
-  let isAnimating = false;
+// ────────── SCENE SETUP ──────────
+const W = window.innerWidth, H = window.innerHeight;
+const renderer = new THREE.WebGLRenderer({antialias:true,alpha:false});
+renderer.setSize(W,H);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setClearColor(0x0a0a12,1);
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.2;
+document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-  // Build dots
-  const dotsEl = document.getElementById('dots');
-  slides.forEach((_, i) => {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i === 0 ? ' active' : '');
-    d.onclick = () => goTo(i);
-    dotsEl.appendChild(d);
+const scene=new THREE.Scene();
+scene.fog=new THREE.FogExp2(0x0a0a12,0.035);
+
+const camera=new THREE.PerspectiveCamera(50,W/H,0.1,200);
+camera.position.set(0,2.5,8);
+camera.lookAt(0,2,0);
+
+// ────────── LIGHTS ──────────
+const ambient=new THREE.AmbientLight(0x8080ff,0.4);
+scene.add(ambient);
+
+const keyLight=new THREE.DirectionalLight(0xffffff,2.0);
+keyLight.position.set(3,8,5);
+keyLight.castShadow=true;
+keyLight.shadow.mapSize.width=2048;
+keyLight.shadow.mapSize.height=2048;
+keyLight.shadow.camera.near=0.1;
+keyLight.shadow.camera.far=50;
+keyLight.shadow.camera.left=-10;keyLight.shadow.camera.right=10;
+keyLight.shadow.camera.top=10;keyLight.shadow.camera.bottom=-10;
+keyLight.shadow.bias=-0.001;
+scene.add(keyLight);
+
+const rimLight=new THREE.DirectionalLight(0xFF6B00,1.5);
+rimLight.position.set(-4,4,-2);
+scene.add(rimLight);
+
+const fillLight=new THREE.DirectionalLight(0x4040ff,0.8);
+fillLight.position.set(-5,3,3);
+scene.add(fillLight);
+
+const groundLight=new THREE.PointLight(0xFF6B00,0.6,15);
+groundLight.position.set(0,-1,2);
+scene.add(groundLight);
+
+// ────────── FLOOR ──────────
+const floorGeo=new THREE.PlaneGeometry(40,40);
+const floorMat=new THREE.MeshStandardMaterial({
+  color:0x0d0d1a,roughness:0.8,metalness:0.3
+});
+const floor=new THREE.Mesh(floorGeo,floorMat);
+floor.rotation.x=-Math.PI/2;
+floor.position.y=-1.6;
+floor.receiveShadow=true;
+scene.add(floor);
+
+// Floor reflection grid
+const gridHelper=new THREE.GridHelper(40,40,0xFF6B00,0x1a1a2e);
+gridHelper.position.y=-1.59;
+gridHelper.material.opacity=0.25;
+gridHelper.material.transparent=true;
+scene.add(gridHelper);
+
+// ────────── ANIMATED 3D FIGURE ──────────
+const fig=new THREE.Group();
+scene.add(fig);
+
+const skinColor=0xD4956A;
+const suitColor=0xFF6B00;
+const darkColor=0x1a1a2e;
+const shirtColor=0xffffff;
+const pantsColor=0x1a1a2e;
+
+// Helper: capsule-like body part
+function makePart(rx,ry,rz,color,shiny){
+  const geo=new THREE.SphereGeometry(1,16,12);
+  geo.scale(rx,ry,rz);
+  const mat=new THREE.MeshStandardMaterial({
+    color,roughness:shiny?0.3:0.6,metalness:shiny?0.2:0.0,
+  });
+  const m=new THREE.Mesh(geo,mat);
+  m.castShadow=true;m.receiveShadow=true;
+  return m;
+}
+function makeBox(w,h,d,color,rough=0.6){
+  const geo=new THREE.BoxGeometry(w,h,d,1,1,1);
+  const mat=new THREE.MeshStandardMaterial({color,roughness:rough,metalness:0.1});
+  const m=new THREE.Mesh(geo,mat);
+  m.castShadow=true;m.receiveShadow=true;
+  return m;
+}
+function makeCylinder(rt,rb,h,segs,color,rough=0.6){
+  const geo=new THREE.CylinderGeometry(rt,rb,h,segs);
+  const mat=new THREE.MeshStandardMaterial({color,roughness:rough,metalness:0.1});
+  const m=new THREE.Mesh(geo,mat);
+  m.castShadow=true;return m;
+}
+
+// HEAD
+const headG=new THREE.Group();
+const head=makePart(0.38,0.44,0.36,skinColor,true);
+headG.add(head);
+
+// Face features
+const noseG=makePart(0.055,0.07,0.07,skinColor,true);
+noseG.position.set(0,-0.04,0.32);headG.add(noseG);
+
+// Eyes
+[-0.12,0.12].forEach(x=>{
+  const eyeW=makePart(0.065,0.065,0.04,0xffffff,true);
+  eyeW.position.set(x,0.07,0.33);headG.add(eyeW);
+  const iris=makePart(0.04,0.04,0.04,0x1a1a2e,true);
+  iris.position.set(x,0.07,0.35);headG.add(iris);
+  const pupil=makePart(0.02,0.02,0.02,0x050508,true);
+  pupil.position.set(x,0.07,0.37);headG.add(pupil);
+  const brow=makeBox(0.13,0.025,0.04,0x1a1a2e);
+  brow.position.set(x,0.17,0.33);headG.add(brow);
+});
+
+// Mouth — smile
+const mouthGeo=new THREE.TorusGeometry(0.09,0.018,8,16,Math.PI);
+const mouthMat=new THREE.MeshStandardMaterial({color:0x6b2020,roughness:0.7});
+const mouth=new THREE.Mesh(mouthGeo,mouthMat);
+mouth.rotation.z=Math.PI;mouth.position.set(0,-0.1,0.33);headG.add(mouth);
+const teeth=makePart(0.065,0.025,0.035,0xffffff,true);
+teeth.position.set(0,-0.1,0.355);headG.add(teeth);
+
+// Ears
+[-0.38,0.38].forEach(x=>{
+  const ear=makePart(0.07,0.1,0.06,skinColor,true);
+  ear.position.set(x,0,0);headG.add(ear);
+});
+
+// Hair
+const hairCap=makePart(0.42,0.25,0.39,0x1a1a2e,false);
+hairCap.position.set(0,0.22,0);headG.add(hairCap);
+const hairFront=makePart(0.3,0.1,0.15,0x1a1a2e,false);
+hairFront.position.set(0,0.35,0.2);headG.add(hairFront);
+
+headG.position.set(0,3.1,0);
+fig.add(headG);
+
+// NECK
+const neck=makeCylinder(0.13,0.16,0.3,12,skinColor);
+neck.position.set(0,2.7,0);fig.add(neck);
+
+// TORSO — suit jacket
+const torso=makeBox(0.85,1.1,0.45,suitColor,0.55);
+torso.position.set(0,1.85,0);fig.add(torso);
+
+// Suit lapels
+const lapelL=makePart(0.15,0.28,0.06,0xfF8C00,0.4);
+lapelL.position.set(-0.15,2.1,0.24);fig.add(lapelL);
+const lapelR=makePart(0.15,0.28,0.06,0xFF8C00,0.4);
+lapelR.position.set(0.15,2.1,0.24);fig.add(lapelR);
+
+// White shirt strip
+const shirt=makeBox(0.22,0.8,0.06,shirtColor);
+shirt.position.set(0,1.9,0.25);fig.add(shirt);
+
+// Tie
+const tieTop=makeBox(0.1,0.6,0.04,0x1a1a2e);
+tieTop.position.set(0,1.9,0.29);fig.add(tieTop);
+
+// Shoulders
+[-0.5,0.5].forEach(x=>{
+  const sh=makePart(0.25,0.2,0.22,suitColor,0.5);
+  sh.position.set(x,2.25,0);fig.add(sh);
+});
+
+// ARMS
+const armLG=new THREE.Group();
+const upperArmL=makeCylinder(0.11,0.1,0.6,12,suitColor);
+upperArmL.position.y=-0.3;
+armLG.add(upperArmL);
+const lowerArmL=makeCylinder(0.1,0.085,0.55,12,skinColor);
+lowerArmL.position.y=-0.9;
+armLG.add(lowerArmL);
+const handL=makePart(0.1,0.13,0.09,skinColor,true);
+handL.position.y=-1.22;armLG.add(handL);
+const thumbL=makePart(0.045,0.07,0.045,skinColor,true);
+thumbL.position.set(-0.1,-1.2,0.06);armLG.add(thumbL);
+armLG.position.set(-0.6,2.2,0);
+const armL=new THREE.Group();
+armL.add(armLG);
+fig.add(armL);
+armL.rotation.z=0.15;
+
+const armRG=new THREE.Group();
+const upperArmR=makeCylinder(0.11,0.1,0.6,12,suitColor);
+upperArmR.position.y=-0.3;armRG.add(upperArmR);
+const lowerArmR=makeCylinder(0.1,0.085,0.55,12,skinColor);
+lowerArmR.position.y=-0.9;armRG.add(lowerArmR);
+const handR=makePart(0.1,0.13,0.09,skinColor,true);
+handR.position.y=-1.22;armRG.add(handR);
+armRG.position.set(0.6,2.2,0);
+const armR=new THREE.Group();
+armR.add(armRG);
+fig.add(armR);
+armR.rotation.z=-0.15;
+
+// HIPS
+const hips=makeBox(0.82,0.28,0.42,pantsColor);
+hips.position.set(0,1.2,0);fig.add(hips);
+
+// BELT
+const belt=makeBox(0.84,0.1,0.47,0x0d0d14);
+belt.position.set(0,1.32,0);fig.add(belt);
+const buckle=makeBox(0.1,0.1,0.06,0xFFAA00,0.2);
+buckle.position.set(0,1.32,0.26);fig.add(buckle);
+
+// LEGS
+const legLG=new THREE.Group();
+const thighL=makeCylinder(0.18,0.16,0.65,12,pantsColor);
+thighL.position.y=-0.32;legLG.add(thighL);
+const calfL=makeCylinder(0.14,0.11,0.6,12,pantsColor);
+calfL.position.y=-0.97;legLG.add(calfL);
+const shoeL=makePart(0.14,0.1,0.22,0x0d0d14,true);
+shoeL.position.set(0,-1.3,0.08);legLG.add(shoeL);
+legLG.position.set(-0.22,1.02,0);
+const legL=new THREE.Group();legL.add(legLG);fig.add(legL);
+
+const legRG=new THREE.Group();
+const thighR=makeCylinder(0.18,0.16,0.65,12,pantsColor);
+thighR.position.y=-0.32;legRG.add(thighR);
+const calfR=makeCylinder(0.14,0.11,0.6,12,pantsColor);
+calfR.position.y=-0.97;legRG.add(calfR);
+const shoeR=makePart(0.14,0.1,0.22,0x0d0d14,true);
+shoeR.position.set(0,-1.3,0.08);legRG.add(shoeR);
+legRG.position.set(0.22,1.02,0);
+const legR=new THREE.Group();legR.add(legRG);fig.add(legR);
+
+// Pointer in right hand (pointing stick)
+const pointerStick=makeCylinder(0.015,0.015,1.1,6,0xFFD700,0.2);
+pointerStick.rotation.z=Math.PI/2;
+pointerStick.position.set(-0.5,-1.1,0.15);
+armRG.add(pointerStick);
+
+fig.position.set(1.5,-0.2,0);
+fig.rotation.y=-0.4;
+
+// ────────── STAGE PLATFORM ──────────
+const stageGeo=new THREE.CylinderGeometry(2.5,2.8,0.25,32);
+const stageMat=new THREE.MeshStandardMaterial({color:0x1a1a2e,roughness:0.4,metalness:0.5});
+const stage=new THREE.Mesh(stageGeo,stageMat);
+stage.position.set(1.5,-1.72,0);
+stage.castShadow=true;stage.receiveShadow=true;
+scene.add(stage);
+
+// Stage ring glow
+const ringGeo=new THREE.TorusGeometry(2.5,0.06,8,64);
+const ringMat=new THREE.MeshStandardMaterial({color:0xFF6B00,emissive:0xFF6B00,emissiveIntensity:1.5,roughness:0.1});
+const ring=new THREE.Mesh(ringGeo,ringMat);
+ring.rotation.x=Math.PI/2;
+ring.position.set(1.5,-1.6,0);
+scene.add(ring);
+
+// ────────── HOLOGRAPHIC SCREEN ──────────
+const screenG=new THREE.Group();
+const screenBG=makeBox(4.5,2.8,0.06,0x050510,0.9);
+screenBG.position.set(-1,2.4,-3.5);
+scene.add(screenBG);
+
+const screenGlow=makeBox(4.6,2.9,0.04,0xFF6B00,0.1);
+screenGlow.position.set(-1,2.4,-3.55);
+const glowMat=new THREE.MeshStandardMaterial({color:0xFF6B00,emissive:0xFF3300,emissiveIntensity:0.4,roughness:0.9});
+screenGlow.material=glowMat;
+scene.add(screenGlow);
+
+// Screen frame
+const frameGeo=new THREE.EdgesGeometry(new THREE.BoxGeometry(4.6,2.9,0.07));
+const frameMat=new THREE.LineBasicMaterial({color:0xFF6B00,linewidth:2});
+const frame=new THREE.LineSegments(frameGeo,frameMat);
+frame.position.set(-1,2.4,-3.5);
+scene.add(frame);
+
+// ────────── FLOATING PARTICLES ──────────
+const particleCount=180;
+const pGeo=new THREE.BufferGeometry();
+const pPos=new Float32Array(particleCount*3);
+const pSpeeds=[];
+for(let i=0;i<particleCount;i++){
+  pPos[i*3]=( Math.random()-0.5)*30;
+  pPos[i*3+1]=Math.random()*20-2;
+  pPos[i*3+2]=( Math.random()-0.5)*20-5;
+  pSpeeds.push({vx:(Math.random()-0.5)*0.01,vy:Math.random()*0.02+0.005,vz:(Math.random()-0.5)*0.01});
+}
+pGeo.setAttribute('position',new THREE.BufferAttribute(pPos,3));
+const pMat=new THREE.PointsMaterial({color:0xFF6B00,size:0.06,transparent:true,opacity:0.5});
+const particles=new THREE.Points(pGeo,pMat);
+scene.add(particles);
+
+// ────────── SLIDES DATA ──────────
+const slides=[
+  {eyebrow:'GALP · MOZAMBIQUE · 2025',title:'EduGalp',body:'Formação para o Futuro — educação para a sustentabilidade nas escolas de Moçambique.'},
+  {eyebrow:'CONTEXTUALIZAÇÃO',title:'O Futuro Começa Hoje',body:'O EduGalp aproxima a Galp das escolas, criando consciência ambiental de forma prática e interativa.'},
+  {eyebrow:'OBJETIVOS',title:'4 Temas de Sustentabilidade',body:'Cada tema é trabalhado de forma interativa nas escolas participantes.'},
+  {eyebrow:'METODOLOGIA',title:'Jornada em 5 Fases',body:'Da criação da app à emissão dos certificados digitais para cada estudante.'},
+  {eyebrow:'METAS',title:'Alcance do Programa',body:'Números concretos de impacto — escolas, estudantes e sessões por ciclo.'},
+  {eyebrow:'RESULTADOS ESPERADOS',title:'O Impacto que Queremos Criar',body:'Futuros colaboradores, comunidades conscientes e crescimento de mercado para a Galp.'},
+  {eyebrow:'ORÇAMENTO ANUAL',title:'Investimento de € 4.200',body:'Custo por escola de apenas €1.050, incluindo app, equipamento, premiação e formação.'},
+];
+
+const showGroups=[
+  [],
+  ['sf1','sf2','sf3'],
+  ['tf1','tf2','tf3','tf4'],
+  ['ps1','ps2','ps3','ps4','ps5'],
+  ['mb1','mb2','mb3','mb4'],
+  ['rc1','rc2','rc3'],
+  ['budget-panel'],
+];
+
+let current=0,isAnim=false;
+const total=slides.length;
+
+// ────────── CAMERA POSITIONS PER SLIDE ──────────
+const camTargets=[
+  {px:0,py:2.5,pz:8,lx:0,ly:2,lz:0},
+  {px:-1.5,py:2.2,pz:7,lx:0.5,ly:2,lz:0},
+  {px:0,py:2.8,pz:7.5,lx:0,ly:2.2,lz:0},
+  {px:0.5,py:2,pz:7,lx:0,ly:1.8,lz:0},
+  {px:-0.5,py:2.5,pz:7.5,lx:0.5,ly:2,lz:0},
+  {px:-0.5,py:2.5,pz:7.5,lx:0,ly:2,lz:0},
+  {px:0.5,py:2.5,pz:7.5,lx:0,ly:2,lz:0},
+];
+
+// ────────── HUD DOTS ──────────
+const dotswrap=document.getElementById('dotswrap');
+for(let i=0;i<total;i++){
+  const d=document.createElement('div');
+  d.className='ndot'+(i===0?' on':'');
+  d.onclick=()=>goTo(i);
+  dotswrap.appendChild(d);
+}
+
+function updateUI(){
+  const s=slides[current];
+  const sp=document.getElementById('speech');
+  sp.classList.remove('show');
+  setTimeout(()=>{
+    document.getElementById('speech-eyebrow').textContent=s.eyebrow;
+    document.getElementById('speech-title').textContent=s.title;
+    document.getElementById('speech-body').textContent=s.body;
+    sp.classList.add('show');
+  },300);
+
+  // Hide all dynamic elements
+  ['sf1','sf2','sf3','tf1','tf2','tf3','tf4','ps1','ps2','ps3','ps4','ps5',
+   'mb1','mb2','mb3','mb4','rc1','rc2','rc3','budget-panel'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.remove('show');
   });
 
-  function goTo(n) {
-    if (isAnimating || n === current) return;
-    isAnimating = true;
-
-    slides[current].classList.add('exit');
-    slides[current].classList.remove('active');
-
-    setTimeout(() => {
-      slides[current].classList.remove('exit');
-      current = n;
-      slides[current].classList.add('active');
-      updateUI();
-      setTimeout(() => { isAnimating = false; }, 600);
-    }, 300);
-  }
-
-  function changeSlide(dir) {
-    const next = current + dir;
-    if (next < 0 || next >= total) return;
-    goTo(next);
-  }
-
-  function updateUI() {
-    document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
-    document.getElementById('prevBtn').disabled = current === 0;
-    document.getElementById('nextBtn').disabled = current === total - 1;
-    document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
-    document.querySelectorAll('.dot').forEach((d, i) => {
-      d.classList.toggle('active', i === current);
-    });
-  }
-
-  function togglePhase(el) {
-    const wasOpen = el.classList.contains('open');
-    document.querySelectorAll('.phase-item').forEach(p => p.classList.remove('open'));
-    if (!wasOpen) el.classList.add('open');
-  }
-
-  // Keyboard
-  document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') changeSlide(1);
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changeSlide(-1);
+  // Show for current slide with stagger
+  const toShow=showGroups[current];
+  toShow.forEach((id,i)=>{
+    setTimeout(()=>{
+      const el=document.getElementById(id);
+      if(el)el.classList.add('show');
+    },400+i*120);
   });
 
-  // Touch/swipe
-  let touchX = 0;
-  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
-  document.addEventListener('touchend', e => {
-    const dx = touchX - e.changedTouches[0].clientX;
-    if (Math.abs(dx) > 50) changeSlide(dx > 0 ? 1 : -1);
-  });
+  // Budget bar animation
+  if(current===6){
+    setTimeout(()=>{
+      document.querySelectorAll('.brow-fill').forEach(b=>{
+        b.style.width=b.style.getPropertyValue('--w')||b.getAttribute('style').match(/--w:([\d%]+)/)?.[1]||'0%';
+      });
+    },600);
+  }
 
+  document.getElementById('nctr').textContent=(current+1)+' / '+total;
+  document.getElementById('prev'+'Btn').disabled=current===0;
+  document.getElementById('nextBtn').disabled=current===total-1;
+  document.getElementById('prog-fill').style.width=((current+1)/total*100)+'%';
+  document.querySelectorAll('.ndot').forEach((d,i)=>d.classList.toggle('on',i===current));
+}
+
+// ────────── SLIDE TRANSITION ──────────
+let camTarget=camTargets[0];
+let camVel={px:0,py:0,pz:0};
+
+function goTo(n){
+  if(isAnim||n===current)return;
+  isAnim=true;current=n;
+  camTarget=camTargets[n];
   updateUI();
+  setTimeout(()=>{isAnim=false;},700);
+}
+function changeSlide(d){
+  const n=current+d;
+  if(n>=0&&n<total)goTo(n);
+}
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' ')changeSlide(1);
+  if(e.key==='ArrowLeft')changeSlide(-1);
+});
+// Touch
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;});
+document.addEventListener('touchend',e=>{
+  const dx=tx-e.changedTouches[0].clientX;
+  if(Math.abs(dx)>60)changeSlide(dx>0?1:-1);
+});
+
+// ────────── ANIMATION LOOP ──────────
+const clock=new THREE.Clock();
+let t=0;
+
+function lerp(a,b,f){return a+(b-a)*f;}
+
+function animate(){
+  requestAnimationFrame(animate);
+  t=clock.getElapsedTime();
+
+  // FIGURE ANIMATIONS
+  // Idle breathing
+  fig.position.y=-0.2+Math.sin(t*1.2)*0.025;
+
+  // Head sway
+  headG.rotation.y=Math.sin(t*0.7)*0.12;
+  headG.rotation.x=Math.sin(t*0.5)*0.05-0.05;
+
+  // ARM GESTURES per slide
+  if(current===0){
+    // Welcoming spread
+    armL.rotation.z=0.15+Math.sin(t*1.5)*0.08;
+    armR.rotation.z=-0.3-Math.sin(t*1.5)*0.08;
+    armRG.rotation.x=Math.sin(t*1.5)*0.1;
+    armLG.rotation.x=Math.sin(t*1.5+1)*0.08;
+  } else if(current===1){
+    // Stat pointing
+    armR.rotation.z=-0.5;
+    armRG.rotation.x=-0.5;
+    armL.rotation.z=0.2+Math.sin(t*2)*0.1;
+    armLG.rotation.x=Math.sin(t*2)*0.1;
+  } else if(current===2){
+    // Presenting themes
+    armR.rotation.z=-0.6-Math.sin(t*1)*0.1;
+    armRG.rotation.x=-0.7;
+    armL.rotation.z=0.15;
+    armLG.rotation.x=0;
+  } else if(current===3){
+    // Counting phases
+    armL.rotation.z=0.3+Math.sin(t*0.8)*0.15;
+    armLG.rotation.x=-0.3+Math.sin(t*0.8)*0.2;
+    armR.rotation.z=-0.2;
+    armRG.rotation.x=0;
+  } else if(current===4){
+    // Big numbers celebration
+    armR.rotation.z=-0.4-Math.abs(Math.sin(t*1.5))*0.5;
+    armL.rotation.z=0.4+Math.abs(Math.sin(t*1.5))*0.5;
+    armRG.rotation.x=Math.sin(t*1.5)*0.2;
+    armLG.rotation.x=Math.sin(t*1.5+1)*0.2;
+  } else if(current===5){
+    // Results gesture
+    armR.rotation.z=-0.35;
+    armRG.rotation.x=-0.6;
+    armL.rotation.z=0.35;
+    armLG.rotation.x=-0.4;
+  } else if(current===6){
+    // Budget pointing
+    armR.rotation.z=-0.5;
+    armRG.rotation.x=-0.3;
+    armL.rotation.z=0.15+Math.sin(t*1.5)*0.1;
+    armLG.rotation.x=Math.sin(t*1.5)*0.1;
+  }
+
+  // Leg walking/idle
+  legL.rotation.x=Math.sin(t*0.5)*0.06;
+  legR.rotation.x=Math.sin(t*0.5+Math.PI)*0.06;
+
+  // Figure turning toward slides
+  fig.rotation.y=lerp(fig.rotation.y,-0.4+Math.sin(t*0.3)*0.1,0.02);
+
+  // CAMERA smooth lerp
+  camera.position.x=lerp(camera.position.x,camTarget.px,0.04);
+  camera.position.y=lerp(camera.position.y,camTarget.py,0.04);
+  camera.position.z=lerp(camera.position.z,camTarget.pz,0.04);
+  camera.lookAt(
+    lerp(camera.position.x*0.5,camTarget.lx,0.05),
+    camTarget.ly,
+    camTarget.lz
+  );
+
+  // PARTICLES
+  const pp=particles.geometry.attributes.position.array;
+  for(let i=0;i<particleCount;i++){
+    pp[i*3]+=pSpeeds[i].vx;
+    pp[i*3+1]+=pSpeeds[i].vy;
+    pp[i*3+2]+=pSpeeds[i].vz;
+    if(pp[i*3+1]>18){pp[i*3+1]=-2;}
+    if(Math.abs(pp[i*3])>15){pSpeeds[i].vx*=-1;}
+  }
+  particles.geometry.attributes.position.needsUpdate=true;
+
+  // Rim light orbit
+  rimLight.position.x=-4+Math.sin(t*0.3)*2;
+  rimLight.position.z=-2+Math.cos(t*0.3)*2;
+
+  // Stage ring pulse
+  ring.material.emissiveIntensity=1.2+Math.sin(t*2)*0.4;
+
+  // Screen holographic flicker
+  screenGlow.material.emissiveIntensity=0.3+Math.sin(t*8)*0.05+Math.random()*0.03;
+
+  renderer.render(scene,camera);
+}
+
+animate();
+updateUI();
+
+// ────────── RESIZE ──────────
+window.addEventListener('resize',()=>{
+  const w=window.innerWidth,h=window.innerHeight;
+  renderer.setSize(w,h);
+  camera.aspect=w/h;
+  camera.updateProjectionMatrix();
+});
+
+// Budget bar init
+document.querySelectorAll('.brow-fill').forEach(b=>{
+  const style=b.getAttribute('style');
+  const m=style.match(/--w:([\d.]+%)/);
+  if(m)b.dataset.w=m[1];
+  b.style.width='0%';
+});
 </script>
 </body>
 </html>
